@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{{title}}</h1>
+<form action="" method="post">
+    {% if current_user.is_authenticated %}
+    <div class="navbar navbar-light">
+        <a class="navbar-brand" href="#">Welcome, {{current_user.name}} {{current_user.surname}}</a>
+    </div>
+    {% for i in indexes %}
+    <div class="col-md6 border rounded">
+        {% set job = jobs[i] %}
+        <h2>{{job.job}}</h2>
+        <label><b>Team leader: </b></label>
+        {% if job.team_leader == current_user.id %}
+        <label style="color:#29bb3c">you</label>
+        {% else %}
+        <label>{{team_leads[i]}}</label>
+        {% endif %}
+        <p><b>Work size: </b>{{job.work_size}}</p>
+        <p><b>Collaborators: </b>{{collabs[i]}}</p>
+        <p><b>Time: </b>from {{job.start_date}} to {{job.end_date}}</p>
+        <img src={{images[i]}} alt="Failed to load icon"/>
+        <label><b>Status: </b>{{statuses[i]}}</label>
+    </div>
+    {% endfor %}
+    {% if jobs == [] %}
+    <h2>You don't have any jobs yet.</h2>
+    {% endif %}
+    <a class="btn btn-secondary" href="/add_job">Add job</a>
+    {% endif %}
+    <div>{{ message }}</div>
+</form>
+{% endblock %}
