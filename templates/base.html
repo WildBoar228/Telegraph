@@ -8,6 +8,16 @@
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
           crossorigin="anonymous">
     <title>{{title}}</title>
+    <style>
+        .mainbar {
+            background-color: #5353d7;
+        }
+        .navbar-brand {
+            font-size: 30px;
+            color: #e4e4e4;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <nav>
@@ -21,8 +31,9 @@
         {% endif %}
     </nav>
     <header>
-        <nav class="navbar navbar-light bg-light">
-            <a class="navbar-brand" href="#">Mars One</a>
+        <nav class="navbar navbar-light mainbar">
+            <a class="navbar-brand" style="color: #e4e4e4" href="#"><img src="static/images/t2.png" height="64" width="64">  Telegraph</a>
+            <a class="navbar-brand" style="color: #e4e4e4; font-size: 18px" href="#">Азбука Морзе эволюционировала</a>
         </nav>
     </header>
     <!-- Begin page content -->
