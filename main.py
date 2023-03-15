@@ -27,7 +27,7 @@ login_manager.init_app(app)
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/main', methods=['GET', 'POST'])
 def main_page():
-    if current_user.is_authenticated:
+    '''if current_user.is_authenticated:
         db_sess = db_session.create_session()
         jobs = []
         team_leads = []
@@ -59,8 +59,9 @@ def main_page():
         return render_template('main.html', title='Ваши работы', jobs=jobs,
                                team_leads=team_leads, collabs=collabs,
                                statuses=statuses, images=images,
-                               indexes=list(range(len(jobs))))
-    
+                               indexes=list(range(len(jobs))))'''
+    if current_user.is_authenticated:
+        print(current_user.last_online)
     return redirect('/login')
 
 
@@ -82,6 +83,11 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
+    if form.bdate.data == None:
+        form.bdate.data = datetime.datetime(datetime.datetime.now().year,
+                                            datetime.datetime.now().month,
+                                            datetime.datetime.now().day)
+
     if form.validate_on_submit():
         if form.password.data != form.password2.data:
             return render_template('register.html', title='Регистрация',
@@ -92,19 +98,30 @@ def register():
             return render_template('register.html', title='Регистрация',
                                    form=form,
                                    message="Такой пользователь уже есть")
+
+        if form.bdate.data == None:
+            form.bdate.data = datetime.datetime(datetime.datetime.now().year,
+                                                datetime.datetime.now().month,
+                                                datetime.datetime.now().day)
+        else:
+            bdate = form.bdate.data
+
         user = User(
             surname=form.surname.data,
             name=form.name.data,
-            age=form.age.data,
-            position=form.position.data,
-            speciality=form.speciality.data,
-            address=form.address.data,
+            bdate=bdate,
+            descript=form.descript.data,
+            city=form.city.data,
+            last_online=datetime.datetime.now(),
             email=form.email.data
         )
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
-        return redirect('/login')
+
+        login_user(user, remember=True)
+        return redirect("/")
+
     return render_template('register.html', title='Регистрация', form=form)
 
 

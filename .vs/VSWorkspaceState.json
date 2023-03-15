@@ -1,7 +1,10 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\static",
+    "\\static\\css",
+    "\\static\\images"
   ],
-  "SelectedNode": "\\C:\\Users\\Игорь\\Desktop\\Питон\\VS\\Telegraph",
+  "SelectedNode": "\\main.py",
   "PreviewInSolutionExplorer": false
 }
