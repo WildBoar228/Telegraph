@@ -11,8 +11,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
 
     id = sqlalchemy.Column(sqlalchemy.Integer, 
                            primary_key=True, autoincrement=True)
-    surname = sqlalchemy.Column(sqlalchemy.String)
-    name = sqlalchemy.Column(sqlalchemy.String)
+    username = sqlalchemy.Column(sqlalchemy.String)
     bdate = sqlalchemy.Column(sqlalchemy.Date)
     descript = sqlalchemy.Column(sqlalchemy.String)
     friends = sqlalchemy.Column(sqlalchemy.String, default='')

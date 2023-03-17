@@ -107,8 +107,7 @@ def register():
             bdate = form.bdate.data
 
         user = User(
-            surname=form.surname.data,
-            name=form.name.data,
+            username=form.username.data,
             bdate=bdate,
             descript=form.descript.data,
             city=form.city.data,
@@ -125,7 +124,7 @@ def register():
     return render_template('register.html', title='Регистрация', form=form)
 
 
-@app.route('/add_job', methods=['GET', 'POST'])
+'''@app.route('/add_job', methods=['GET', 'POST'])
 def add_job():
     form = JobForm()
     form.start_date.data = datetime.datetime.now()
@@ -158,7 +157,7 @@ def add_job():
         db_sess.add(job)
         db_sess.commit()
         return redirect('/')
-    return render_template('job.html', title='Новая работа', form=form)
+    return render_template('job.html', title='Новая работа', form=form)'''
 
 
 def main():
