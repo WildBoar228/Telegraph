@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form action="" method="post">
+    <h1 style="font-size: 14px; margin-top: 10px;">{{title}}</h1>
+    <label style="font-size: 30px; color: #5353d7">{{ user.username }}</label>
+    {% if current_user.is_authenticated and user == current_user %}
+    <label style="font-size: 30px; color: #2b8b4b; margin-left: 20px">(You)</label>
+    {% endif %}
+    <p style="font-size: 14px; color: #9f9f9f">Last online {{ user.last_online }}</p>
+    <p style="font-size: 18px; color: #9292d1">{{ user.descript }}</p>
+
+    {% if current_user.is_authenticated and user != current_user %}
+    <div>
+        {% if current_user not in friends %}
+        <input name="friend" type="submit" class="btn btn-primary" style="background-color: #5353d7" value="Offer friendship">
+        {% else %}
+        <p style="font-size: 20px; color: #9f9f9f">This user is already your friend</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <p style="font-size: 25px; color: #5353d7; margin-top: 20px">Extra info:</p>
+
+    <label style="font-size: 20px; color: #5353d7">Birth date:</label>
+    <label style="font-size: 18px; color: #9292d1; margin-left: 5px;">{{ user.bdate }}</label>
+
+    <p style="font-size: 20px; color: #5353d7">Friends:</p>
+    {% for friend in friends %}
+    <div>
+        <a href="/profile/{{friend.id}}" style="font-size: 18px; margin-left: 15px;">{{friend.username}}</a>
+    </div>
+    {% endfor %}
+
+    {% if friends == [] %}
+    {% if user == current_user %}
+    <p style="font-size: 20px; color: #9f9f9f">You don't have any friends yet.</p>
+    {% else %}
+    <p style="font-size: 20px; color: #9f9f9f">This user doesn't have any friends yet.</p>
+    <p style="font-size: 20px; color: #9f9f9f">(He must feel himself alone, offer him your friendship!)</p>
+    {% endif %}
+    {% endif %}
+
+    <label style="font-size: 20px; color: #5353d7">City:</label>
+    <label style="font-size: 18px; color: #9292d1; margin-left: 5px;">{{ user.city }}</label>
+    <p></p>
+    <label style="font-size: 20px; color: #5353d7">Email:</label>
+    <label style="font-size: 18px; color: #9292d1; margin-left: 5px;">{{ user.email }}</label>
+
+
+    <div>{{ message }}</div>
+</form>
+{% endblock %}

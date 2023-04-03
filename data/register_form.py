@@ -10,7 +10,7 @@ class RegisterForm(FlaskForm):
     bdate = DateField('Дата рождения')
     descript = TextAreaField('Расскажите о себе')
     city = StringField('Ваш город')
-    email = EmailField('Почта или номер телефона *', validators=[DataRequired()])
+    email = EmailField('Логин (электронная почта) *', validators=[DataRequired()])
     password = PasswordField('Пароль *', validators=[DataRequired()])
     password2 = PasswordField('Подтвердите пароль *', validators=[DataRequired()])
     submit = SubmitField('Зарегистрироваться')

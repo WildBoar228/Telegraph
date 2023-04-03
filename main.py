@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, request
 from flask_login import (LoginManager, current_user, login_user, logout_user,
                          login_required)
 from flask_restful import reqparse, abort, Api, Resource
@@ -97,7 +97,7 @@ def register():
         if db_sess.query(User).filter(User.email == form.email.data).first():
             return render_template('register.html', title='Регистрация',
                                    form=form,
-                                   message="Такой пользователь уже есть")
+                                   message="Пользователь с таким логином уже есть")
 
         if form.bdate.data == None:
             form.bdate.data = datetime.datetime(datetime.datetime.now().year,
@@ -160,6 +160,31 @@ def add_job():
     return render_template('job.html', title='Новая работа', form=form)'''
 
 
+@app.route('/profile/<int:id>', methods=['GET', 'POST'])
+def add_job(id):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.id == id).first()
+    if user is None:
+        abort(404, message="Пользователя с таким id пока не существует")
+
+    friends = []
+    ids = user.friends.split(', ')
+    if '' in ids:
+        ids.remove('')
+    for friend_id in map(int, ids):
+        friend = db_sess.query(User).filter(User.id == friend_id).first()
+        if friend is not None:
+            friends.append(friend)
+
+    if request.method == 'POST':
+        if request.form["friend"]:
+            print("Let's be friends!")
+            # Здесь будем отправлять заявку в друзья
+
+    print(user.id)
+    return render_template('profile.html', title=f'Пользователь {id}', user=user, friends=friends);
+
+
 def main():
     port = int(os.environ.get('PORT', 8080))
     
@@ -169,6 +194,7 @@ def main():
 
 @login_manager.user_loader
 def load_user(user_id):
+    print(user_id)
     db_sess = db_session.create_session()
     return db_sess.query(User).get(user_id)
 
