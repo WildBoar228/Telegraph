@@ -9,8 +9,12 @@ from wtforms.validators import DataRequired
 
 from data import db_session
 from data.users import User
+from data.friend_request import FriendshipRequest
+from data.messages import Message
+from data.chats import Chats
 from data.login_form import LoginForm
 from data.register_form import RegisterForm
+from data.friendship_form import FriendshipForm
 
 import datetime
 import os
@@ -112,7 +116,8 @@ def register():
             descript=form.descript.data,
             city=form.city.data,
             last_online=datetime.datetime.now(),
-            email=form.email.data
+            email=form.email.data,
+            free_chat=form.free_chat.data
         )
         user.set_password(form.password.data)
         db_sess.add(user)
@@ -124,44 +129,8 @@ def register():
     return render_template('register.html', title='Регистрация', form=form)
 
 
-'''@app.route('/add_job', methods=['GET', 'POST'])
-def add_job():
-    form = JobForm()
-    form.start_date.data = datetime.datetime.now()
-    if form.validate_on_submit():
-        db_sess = db_session.create_session()
-
-        if db_sess.query(User).filter(User.id == form.team_leader.data).first() is None:
-            return render_template('register.html', title='Регистрация',
-                                   form=form,
-                                   message=f"Нет пользователя с индексом {form.team_leader.data}")
-        for index in form.collaborators.data.split(', '):
-            if db_sess.query(User).filter(User.id == int(index)).first() is None:
-                return render_template('register.html', title='Регистрация',
-                                       form=form,
-                                       message=f"Нет пользователя с индексом {index}")
-
-        
-        if form.start_date.data == None:
-            start = datetime.datetime.now()
-        else:
-            start = form.start_date.data
-        end_date = start + datetime.timedelta(hours=form.work_size.data)
-        print(end_date, start)
-        job = Jobs(team_leader=form.team_leader.data,
-                   job=form.job.data,
-                   work_size=form.work_size.data,
-                   collaborators=form.collaborators.data,
-                   start_date=start, end_date=end_date,
-                   is_finished=form.is_finished.data)
-        db_sess.add(job)
-        db_sess.commit()
-        return redirect('/')
-    return render_template('job.html', title='Новая работа', form=form)'''
-
-
 @app.route('/profile/<int:id>', methods=['GET', 'POST'])
-def add_job(id):
+def profile(id):
     db_sess = db_session.create_session()
     user = db_sess.query(User).filter(User.id == id).first()
     if user is None:
@@ -176,13 +145,94 @@ def add_job(id):
         if friend is not None:
             friends.append(friend)
 
-    if request.method == 'POST':
-        if request.form["friend"]:
-            print("Let's be friends!")
-            # Здесь будем отправлять заявку в друзья
+    request = db_sess.query(FriendshipRequest).filter(FriendshipRequest.from_id == current_user.id,
+                                                      FriendshipRequest.to_id == id).first()
 
     print(user.id)
-    return render_template('profile.html', title=f'Пользователь {id}', user=user, friends=friends);
+    return render_template('profile.html', title=f'Пользователь {id}', user=user, friends=friends, is_request=request is not None);
+
+
+@app.route('/friendship_request/<int:id>', methods=['GET', 'POST'])
+def friendship(id):
+    if not current_user.is_authenticated:
+        redirect('/login')
+
+    form = FriendshipForm()
+
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.id == id).first()
+        if user is None:
+            return render_template('friendship_request.html', title='Запрос на дружбу',
+                                   form=form,
+                                   message="Пользователь с таким логином не найден")
+
+        request = FriendshipRequest(
+            text=form.text.data,
+            from_id=current_user.id,
+            to_id=id,
+            sender_name=current_user.username,
+            date=datetime.datetime.now()
+        )
+        
+        db_sess.add(request)
+        db_sess.commit()
+
+        return redirect(f"/profile/{id}")
+
+    return render_template('friendship_request.html', title='Запрос на дружбу', form=form)
+
+
+@app.route('/my_requests', methods=['GET', 'POST'])
+def my_requests():
+    if not current_user.is_authenticated:
+        redirect('/login')
+
+    db_sess = db_session.create_session()
+    requests = list(db_sess.query(FriendshipRequest).filter(FriendshipRequest.to_id == current_user.id))
+    return render_template('my_requests.html', title='Запросы на вашу дружбу', requests=requests)
+
+
+@app.route('/accept_request/<int:id>', methods=['GET', 'POST'])
+def accept_request(id):
+    if not current_user.is_authenticated:
+        redirect('/login')
+
+    db_sess = db_session.create_session()
+    req = db_sess.query(FriendshipRequest).filter(FriendshipRequest.id == id).first()
+
+    user_from = db_sess.query(User).filter(User.id == req.from_id).first()
+    user_to = db_sess.query(User).filter(User.id == req.to_id).first()
+
+    if req is None or user_from is None or user_to is None:
+        abort(404)
+
+    user_to.friends += ', ' + str(user_from.id)
+    user_from.friends += ', ' + str(user_to.id)
+
+    db_sess.merge(user_to)
+    db_sess.merge(user_from)
+    db_sess.delete(req)
+    db_sess.commit()
+
+    return redirect('/my_requests')
+
+
+@app.route('/reject_request/<int:id>', methods=['GET', 'POST'])
+def reject_request(id):
+    if not current_user.is_authenticated:
+        redirect('/login')
+
+    db_sess = db_session.create_session()
+    req = db_sess.query(FriendshipRequest).filter(FriendshipRequest.id == id).first()
+
+    if req is None:
+        abort(404)
+
+    db_sess.delete(req)
+    db_sess.commit()
+
+    return redirect('/my_requests')
 
 
 def main():

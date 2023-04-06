@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{{title}}</h1>
+<form action="" method="post">
+    <p style="font-size: 18px; color: #9292d1">Write something to that person, for example, who you are</p>
+    {{ form.hidden_tag() }}
+    <div>
+        {{ form.csrf_token }}
+    </div>
+    {% for field in form if field.name != 'csrf_token' and field.name != 'submit' %}
+    <div>
+        {{ field.label() }}
+        {{ field() }}
+        {% for error in field.errors %}
+        <div class="error">{{ error }}</div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+    <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+    <div>{{ message }}</div>
+</form>
+{% endblock %}

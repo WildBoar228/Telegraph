@@ -12,10 +12,16 @@
 
     {% if current_user.is_authenticated and user != current_user %}
     <div>
-        {% if current_user not in friends %}
-        <input name="friend" type="submit" class="btn btn-primary" style="background-color: #5353d7" value="Offer friendship">
+        {% if current_user not in friends and not is_request %}
+        <a href="/friendship_request/{{user.id}}" class="btn btn-primary" style="background-color: #5353d7">Offer friendship</a>
+        {% elif is_request %}
+        <p style="font-size: 20px; color: #9f9f9f">You already have sent a friendship request. Wait for answer</p>
         {% else %}
         <p style="font-size: 20px; color: #9f9f9f">This user is already your friend</p>
+        {% endif %}
+
+        {% if current_user in friends or user.free_chat %}
+        <a href="/chat/{{user.id}}" class="btn btn-secondary" style="background-color: #9292d1">Send message</a>
         {% endif %}
     </div>
     {% endif %}

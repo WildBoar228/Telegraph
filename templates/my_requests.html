@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form action="" method="post">
+    <h1 style="font-size: 14px; margin-top: 10px;">{{title}}</h1>
+
+    {% for request in requests %}
+    <div class="col-md6 border rounded">
+        <label style="font-size: 30px; color: #5353d7">{{request.sender_name}} </label>
+        <label style="font-size: 30px; color: #9292d1"> ({{request.from_id}})</label>
+        <a href="/accept_request/{{request.id}}" class="btn btn-primary" style="font-size: 18px; background-color: #5353d7">Accept</a>
+        <a href="/reject_request/{{request.id}}" class="btn btn-secondary" style="font-size: 18px; background-color: #9292d1">Reject</a>
+    </div>
+    {% endfor %}
+
+    <a href="/" class="btn btn-primary" style="font-size: 18px; margin-left: 15px;">Return</a>
+
+    <div>{{ message }}</div>
+</form>
+{% endblock %}
