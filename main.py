@@ -11,7 +11,7 @@ from data import db_session
 from data.users import User
 from data.friend_request import FriendshipRequest
 from data.messages import Message
-from data.chats import Chats
+from data.chats import Chat
 from data.login_form import LoginForm
 from data.register_form import RegisterForm
 from data.friendship_form import FriendshipForm
@@ -233,6 +233,41 @@ def reject_request(id):
     db_sess.commit()
 
     return redirect('/my_requests')
+
+
+@app.route('/chat/<int:id>', methods=['GET', 'POST'])
+def chat(id):
+    if not current_user.is_authenticated:
+        redirect("/login")
+
+    db_sess = db_session.create_session()
+    chats1 = db_sess.query(Chat).filter(Chat.first_person == current_user.id, Chat.second_person == id).all()
+    chats2 = db_sess.query(Chat).filter(Chat.second_person == current_user.id, Chat.first_person == id).all()
+    chat = db_sess.query(Chat).filter(Chat in chats1, Chat in chats2).first()
+    if chat is None:
+        chat = Chat(
+            first_person=current_user.id,
+            second_person=id
+            )
+        db_sess.add(chat)
+        db_sess.commit()
+
+    messages = db_sess.query(Message).filter(Message.chat_id == chat.id).all()
+    print(len(messages))
+
+    other = db_sess.query(User).filter(User.id == id).first()
+
+    if request.method == "POST":
+        if request.form.get('message_button'):
+            msg = Message(
+                chat_id = chat.id,
+                sender_id = current_user.id,
+                send_time = datetime.datetime.now())
+            msg.coded_text = msg.code_text(request.form.get('message_text'))
+            db_sess.add(msg)
+            db_sess.commit()
+
+    return render_template('chat.html', title=other.username, messages=messages, other=other)
 
 
 def main():

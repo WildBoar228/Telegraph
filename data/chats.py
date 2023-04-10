@@ -3,10 +3,11 @@ from .db_session import SqlAlchemyBase
 from sqlalchemy_serializer import SerializerMixin
 
 
-class Chats(SqlAlchemyBase, SerializerMixin):
+class Chat(SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'chats'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, 
                            primary_key=True, autoincrement=True)
-    collaborators = sqlalchemy.Column(sqlalchemy.String)
+    first_person = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
+    second_person = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
     messages = sqlalchemy.Column(sqlalchemy.String, nullable=True)
