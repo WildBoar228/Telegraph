@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<form action="" method="post">
+<form action="">
     <div id="name-bar" style="text-align: center; vertical-align: bottom; width: 50vw; height: 80px; background: #5353d7">
         <p style="font-size: 20px; color: #e4e4e4; font-weight: bold;">{{other.username}}</p>
         <p style="font-size: 15px; color: #e4e4e4;">Last online: {{other.last_online}}</p>
@@ -10,15 +10,15 @@
     <div data-bs-spy="scroll" data-bs-target="#name-bar" data-bs-offset="0" class="scrollspy-example" tabindex="0" style="background-color: #d5dcff; width: 50vw; height: 600px">
         <p style="text-align: center; margin-left: 30px; margin-right: 30px; margin-bottom: 30px;">Welcome to the club, buddy</p>
         {% for msg in messages %}
-        {% if message.sender_id == other.id %}
-        <div style="border-block: solid; border-block-color: #9292d1; justify-content: left; margin-top: 20px; margin-left: 30px; margin-right: 30px;">
+        {% if msg.sender_id == other.id %}
+        <div style="border-block: solid; background-color: #9292d1; justify-content: left; margin-top: 20px; margin-left: 30px; margin-right: 30px;">
             <p style="color: #5353d7; font-weight: bold; font-size: 16px">{{other.username}}</p>
             <p style="font-size: 18px">{{msg.decode_text(msg.coded_text)}}</p>
             <p style="color: #5c5c5c; font-size: 10px">{{msg.send_time}}</p>
         </div>
         {% else %}
-        <div style="border-block: solid; border-block-color: #9f9f9f; justify-content: left; margin-top: 20px; margin-left: 30px; margin-right: 30px;">
-            <p style="color: #5353d7; font-weight: bold; font-size: 16px;">{{other.username}}</p>
+        <div style="border-block: solid; background-color: #9f9f9f; justify-content: right; margin-top: 20px; margin-left: 30px; margin-right: 30px;">
+            <p style="color: #5353d7; font-weight: bold; font-size: 16px;">{{current_user.username}}</p>
             <p style="font-size: 18px">{{msg.decode_text(msg.coded_text)}}</p>
             <p style="color: #5c5c5c; font-size: 10px">{{msg.send_time}}</p>
         </div>

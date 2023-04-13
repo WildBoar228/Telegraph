@@ -6,4 +6,4 @@ from wtforms.validators import DataRequired
 
 class FriendshipForm(FlaskForm):
     text = TextAreaField('')
-    submit = SubmitField('Войти')
+    submit = SubmitField('Отправить запрос')

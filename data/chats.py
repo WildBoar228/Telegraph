@@ -8,6 +8,5 @@ class Chat(SqlAlchemyBase, SerializerMixin):
 
     id = sqlalchemy.Column(sqlalchemy.Integer, 
                            primary_key=True, autoincrement=True)
-    first_person = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
-    second_person = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
+    collaborators = sqlalchemy.Column(sqlalchemy.String)
     messages = sqlalchemy.Column(sqlalchemy.String, nullable=True)

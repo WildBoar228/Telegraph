@@ -238,22 +238,23 @@ def reject_request(id):
 @app.route('/chat/<int:id>', methods=['GET', 'POST'])
 def chat(id):
     if not current_user.is_authenticated:
-        redirect("/login")
+        return redirect("/login")
+
+    if current_user.id == id:
+        abort(404, message='Вы не можете писать сами себе')
 
     db_sess = db_session.create_session()
-    chats1 = db_sess.query(Chat).filter(Chat.first_person == current_user.id, Chat.second_person == id).all()
-    chats2 = db_sess.query(Chat).filter(Chat.second_person == current_user.id, Chat.first_person == id).all()
-    chat = db_sess.query(Chat).filter(Chat in chats1, Chat in chats2).first()
+    collab1 = f'{current_user.id}, {id}'
+    collab2 = f'{id}, {current_user.id}'
+    chat = db_sess.query(Chat).filter((Chat.collaborators == collab1) | (Chat.collaborators == collab2)).first()
     if chat is None:
         chat = Chat(
-            first_person=current_user.id,
-            second_person=id
+            collaborators=collab1
             )
         db_sess.add(chat)
         db_sess.commit()
 
     messages = db_sess.query(Message).filter(Message.chat_id == chat.id).all()
-    print(len(messages))
 
     other = db_sess.query(User).filter(User.id == id).first()
 
@@ -266,8 +267,9 @@ def chat(id):
             msg.coded_text = msg.code_text(request.form.get('message_text'))
             db_sess.add(msg)
             db_sess.commit()
+            messages.append(msg)
 
-    return render_template('chat.html', title=other.username, messages=messages, other=other)
+    return render_template('chat.html', title=other.username, messages=messages, other=other, message='')
 
 
 def main():
