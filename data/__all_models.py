@@ -5,3 +5,4 @@ from . import chats
 from . import messages
 from . import register_form
 from . import friendship_form
+from . import edit_profile_form

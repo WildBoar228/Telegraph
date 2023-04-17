@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form action="" method="post">
+    <label style="font-size: 36px; font-weight: bold;">Welcome to Telegraph, </label>
+    <label style="font-size: 36px; font-weight: bold; color: #5353d7;">{{ current_user.username }}</label>
+    <label style="font-size: 36px; font-weight: bold;">!</label>
+
+    <h2 style="color: #5353d7; text-align: center;">Your personal data:</h2>
+    <label style="font-size: 20px; color: #5353d7">Description:</label>
+    <label style="font-size: 18px; color: #9292d1; margin-left: 5px;">{{ current_user.description }}</label>
+    <p></p>
+    <label style="font-size: 20px; color: #5353d7">Birth date:</label>
+    <label style="font-size: 18px; color: #9292d1; margin-left: 5px;">{{ current_user.bdate }}</label>
+    <p></p>
+    <label style="font-size: 20px; color: #5353d7">City:</label>
+    <label style="font-size: 18px; color: #9292d1; margin-left: 5px;">{{ current_user.city }}</label>
+    <p></p>
+    <label style="font-size: 20px; color: #5353d7">Email:</label>
+    <label style="font-size: 18px; color: #9292d1; margin-left: 5px;">{{ current_user.email }}</label>
+    <p></p>
+    {% if current_user.free_chat %}
+    <p style="font-size: 20px; color: #5353d7">Every user can write to you a message</p>
+    {% else %}
+    <p style="font-size: 20px; color: #5353d7">Only your friends can write to you a message</p>
+    {% endif %}
+    <a class="btn btn-primary" href="/edit_profile" style="background-color: #5353d7">Edit profile</a>
+
+    <h2 style="color: #5353d7; text-align: center;">Your friends:</h2>
+    {% if friends == [] %}
+    <p style="font-size: 20px; color: #9f9f9f">You don't have any friends yet.</p>
+    {% else %}
+    <ul>
+        {% for friend in friends %}
+        <li>
+            <a href="/profile/{{friend.id}}" style="font-size: 18px; margin-left: 15px;">{{friend.username}}</a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <a class="btn btn-primary" href="/my_requests" style="background-color: #5353d7">Friendship requests</a>
+
+    <div>{{ message }}</div>
+</form>
+{% endblock %}

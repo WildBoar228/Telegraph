@@ -15,6 +15,7 @@ from data.chats import Chat
 from data.login_form import LoginForm
 from data.register_form import RegisterForm
 from data.friendship_form import FriendshipForm
+from data.edit_profile_form import EditProfileForm
 
 import datetime
 import os
@@ -31,42 +32,21 @@ login_manager.init_app(app)
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/main', methods=['GET', 'POST'])
 def main_page():
-    '''if current_user.is_authenticated:
-        db_sess = db_session.create_session()
-        jobs = []
-        team_leads = []
-        collabs = []
-        statuses = []
-        images = []
-        for job in db_sess.query(Jobs):
-            print(job.job)
-            if (str(current_user.id) in job.collaborators.split(', ') or
-                current_user.id == job.team_leader):
-                jobs.append(job)
+    if not current_user.is_authenticated:
+        return redirect('/login')
 
-                leader = db_sess.query(User).filter(User.id == job.team_leader).first()
-                team_leads.append(f'{leader.name} {leader.surname}')
-                collabs.append(', '.join([f'{u.name} {u.surname}' for u in db_sess.query(User)
-                                          if (str(u.id) in job.collaborators.split(', ') or
-                                              u.id == job.team_leader)]))
-                
-                if job.is_finished:
-                    statuses.append('Работа успешно завершена')
-                    images.append(url_for('static', filename='images/done.png'))
-                elif datetime.datetime.now() < job.end_date:
-                    statuses.append('Работа ещё выполняется')
-                    images.append(url_for('static', filename='images/continues.png'))
-                else:
-                    statuses.append('Работа не выполнена, время вышло')
-                    images.append(url_for('static', filename='images/time_out.png'))
+    db_sess = db_session.create_session()
 
-        return render_template('main.html', title='Ваши работы', jobs=jobs,
-                               team_leads=team_leads, collabs=collabs,
-                               statuses=statuses, images=images,
-                               indexes=list(range(len(jobs))))'''
-    if current_user.is_authenticated:
-        print(current_user.last_online)
-    return redirect('/login')
+    friends = []
+    ids = current_user.friends.split(', ')
+    if '' in ids:
+        ids.remove('')
+    for friend_id in map(int, ids):
+        friend = db_sess.query(User).filter(User.id == friend_id).first()
+        if friend is not None:
+            friends.append(friend)
+
+    return render_template('main_page.html', title=f'Главная', friends=friends);
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -259,7 +239,8 @@ def chat(id):
     other = db_sess.query(User).filter(User.id == id).first()
 
     if request.method == "POST":
-        if request.form.get('message_button'):
+        if request.form.get('message_button') and request.form.get('message_text') != '':
+            print(dict(request.form))
             msg = Message(
                 chat_id = chat.id,
                 sender_id = current_user.id,
@@ -270,6 +251,44 @@ def chat(id):
             messages.append(msg)
 
     return render_template('chat.html', title=other.username, messages=messages, other=other, message='')
+
+
+@app.route('/edit_profile', methods=['GET', 'POST'])
+def edit_profile():
+    if not current_user.is_authenticated:
+        redirect('/login')
+
+    form = EditProfileForm()
+    if request.method == 'GET':
+        form.username.data = current_user.username
+        form.bdate.data = current_user.bdate
+        form.descript.data = current_user.descript
+        form.city.data = current_user.city
+        form.email.data = current_user.email
+        form.free_chat.data = current_user.free_chat
+
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+
+        if form.bdate.data == None:
+            form.bdate.data = datetime.datetime(datetime.datetime.now().year,
+                                                datetime.datetime.now().month,
+                                                datetime.datetime.now().day)
+        else:
+            bdate = form.bdate.data
+
+        current_user.username = form.username.data
+        current_user.bdate = bdate
+        current_user.descript = form.descript.data
+        current_user.city = form.city.data
+        current_user.email = form.email.data
+        current_user.free_chat = form.free_chat.data
+        db_sess.merge(current_user)
+        db_sess.commit()
+
+        return redirect("/")
+
+    return render_template('edit_profile.html', title=f'Редактировать профиль', form=form);
 
 
 def main():
