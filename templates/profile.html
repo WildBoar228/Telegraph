@@ -7,7 +7,7 @@
     {% if current_user.is_authenticated and user == current_user %}
     <label style="font-size: 30px; color: #2b8b4b; margin-left: 20px">(You)</label>
     {% endif %}
-    <p style="font-size: 14px; color: #9f9f9f">Last online {{ user.last_online }}</p>
+    <p style="font-size: 14px; color: #9f9f9f">Last online {{user.last_online.day}}/{{user.last_online.month}}/{{user.last_online.year}} {{user.last_online.hour}}:{{user.last_online.minute}}</p>
     <p style="font-size: 18px; color: #9292d1">{{ user.descript }}</p>
 
     {% if current_user.is_authenticated and user != current_user %}

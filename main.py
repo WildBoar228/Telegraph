@@ -12,6 +12,7 @@ from data.users import User
 from data.friend_request import FriendshipRequest
 from data.messages import Message
 from data.chats import Chat
+from data.file import File
 from data.login_form import LoginForm
 from data.register_form import RegisterForm
 from data.friendship_form import FriendshipForm
@@ -19,6 +20,7 @@ from data.edit_profile_form import EditProfileForm
 
 import datetime
 import os
+import base64
 
 
 app = Flask(__name__)
@@ -36,6 +38,9 @@ def main_page():
         return redirect('/login')
 
     db_sess = db_session.create_session()
+    current_user.last_online = datetime.datetime.now()
+    db_sess.merge(current_user)
+    db_sess.commit()
 
     friends = []
     ids = current_user.friends.split(', ')
@@ -111,7 +116,12 @@ def register():
 
 @app.route('/profile/<int:id>', methods=['GET', 'POST'])
 def profile(id):
+    if current_user.is_authenticated:
+        current_user.last_online = datetime.datetime.now()
     db_sess = db_session.create_session()
+    current_user.last_online = datetime.datetime.now()
+    db_sess.merge(current_user)
+    db_sess.commit()
     user = db_sess.query(User).filter(User.id == id).first()
     if user is None:
         abort(404, message="Пользователя с таким id пока не существует")
@@ -136,11 +146,14 @@ def profile(id):
 def friendship(id):
     if not current_user.is_authenticated:
         redirect('/login')
+    db_sess = db_session.create_session()
+    current_user.last_online = datetime.datetime.now()
+    db_sess.merge(current_user)
+    db_sess.commit()
 
     form = FriendshipForm()
 
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.id == id).first()
         if user is None:
             return render_template('friendship_request.html', title='Запрос на дружбу',
@@ -167,8 +180,11 @@ def friendship(id):
 def my_requests():
     if not current_user.is_authenticated:
         redirect('/login')
-
     db_sess = db_session.create_session()
+    current_user.last_online = datetime.datetime.now()
+    db_sess.merge(current_user)
+    db_sess.commit()
+
     requests = list(db_sess.query(FriendshipRequest).filter(FriendshipRequest.to_id == current_user.id))
     return render_template('my_requests.html', title='Запросы на вашу дружбу', requests=requests)
 
@@ -177,8 +193,11 @@ def my_requests():
 def accept_request(id):
     if not current_user.is_authenticated:
         redirect('/login')
-
     db_sess = db_session.create_session()
+    current_user.last_online = datetime.datetime.now()
+    db_sess.merge(current_user)
+    db_sess.commit()
+
     req = db_sess.query(FriendshipRequest).filter(FriendshipRequest.id == id).first()
 
     user_from = db_sess.query(User).filter(User.id == req.from_id).first()
@@ -202,8 +221,11 @@ def accept_request(id):
 def reject_request(id):
     if not current_user.is_authenticated:
         redirect('/login')
-
     db_sess = db_session.create_session()
+    current_user.last_online = datetime.datetime.now()
+    db_sess.merge(current_user)
+    db_sess.commit()
+
     req = db_sess.query(FriendshipRequest).filter(FriendshipRequest.id == id).first()
 
     if req is None:
@@ -219,11 +241,14 @@ def reject_request(id):
 def chat(id):
     if not current_user.is_authenticated:
         return redirect("/login")
+    db_sess = db_session.create_session()
+    current_user.last_online = datetime.datetime.now()
+    db_sess.merge(current_user)
+    db_sess.commit()
 
     if current_user.id == id:
         abort(404, message='Вы не можете писать сами себе')
 
-    db_sess = db_session.create_session()
     collab1 = f'{current_user.id}, {id}'
     collab2 = f'{id}, {current_user.id}'
     chat = db_sess.query(Chat).filter((Chat.collaborators == collab1) | (Chat.collaborators == collab2)).first()
@@ -235,28 +260,49 @@ def chat(id):
         db_sess.commit()
 
     messages = db_sess.query(Message).filter(Message.chat_id == chat.id).all()
+    files = {}
+    for msg in messages:
+        if msg.attached_file is not None:
+            file = db_sess.query(File).filter(File.id == msg.attached_file).first()
+            files[msg] = base64.b64encode(file.content)
+            print(files[msg])
 
     other = db_sess.query(User).filter(User.id == id).first()
 
     if request.method == "POST":
+        file = request.files.get('file')
+        print(file)
         if request.form.get('message_button') and request.form.get('message_text') != '':
-            print(dict(request.form))
             msg = Message(
                 chat_id = chat.id,
                 sender_id = current_user.id,
                 send_time = datetime.datetime.now())
             msg.coded_text = msg.code_text(request.form.get('message_text'))
+            if file is not None:
+                file_obj = File(
+                    avaible_for = f'{current_user.id}, {other.id}',
+                    name = file.filename,
+                    content = file.read())
+                db_sess.add(file_obj)
+                db_sess.commit()
+                file_id = file_obj.id
+            msg.attached_file = file_id
             db_sess.add(msg)
             db_sess.commit()
             messages.append(msg)
 
-    return render_template('chat.html', title=other.username, messages=messages, other=other, message='')
+    return render_template('chat.html', title=other.username, messages=messages, other=other, message='', files=files)
 
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
 def edit_profile():
     if not current_user.is_authenticated:
         redirect('/login')
+
+    db_sess = db_session.create_session()
+    current_user.last_online = datetime.datetime.now()
+    db_sess.merge(current_user)
+    db_sess.commit()
 
     form = EditProfileForm()
     if request.method == 'GET':
@@ -268,8 +314,6 @@ def edit_profile():
         form.free_chat.data = current_user.free_chat
 
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
-
         if form.bdate.data == None:
             form.bdate.data = datetime.datetime(datetime.datetime.now().year,
                                                 datetime.datetime.now().month,
