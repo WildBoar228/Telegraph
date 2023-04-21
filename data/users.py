@@ -27,3 +27,8 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
 
     def check_password(self, password):
         return check_password_hash(self.hashed_password, password)
+
+    def count_age(self):
+        return (datetime.date(year=datetime.datetime.now().year,
+                              month=datetime.datetime.now().month,
+                              day=datetime.datetime.now().day) - self.bdate).days // 365

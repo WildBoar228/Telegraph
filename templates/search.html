@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{{title}}</h1>
+<form action="" method="post">
+    <input type="search" placeholder="Enter text..." name="searchField"/>
+    <button type="submit" name="search" class="btn btn-primary" style="background-color: #5353d7">Search</button>
+
+    <p style="font-size: 18px; color: #9292d1">You can search people by these parameters:</p>
+    <select name="searchParam" id="searchParam">
+        <option value="username">Name</option>
+        <option value="email">Email</option>
+        <option value="city">City</option>
+    </select>
+
+    {% if users == [] and apolog %}
+    <p style="font-size: 18px; color: #9292d1">We are afraid there aren't such people among Telegraph users.</p>
+    {% endif %}
+
+    {% for user in users %}
+    <div class="col-md6 border rounded">
+        <a href="/profile/{{user.id}}" style="font-size: 24px; color: #5353d7;"><b>{{user.username}}</b></a>
+        <p style="font-size: 18px; color: #9292d1;">{{user.city}}, {{user.count_age()}} years old</p>
+        <p style="font-size: 18px; color: #9292d1;">{{user.email}}</p>
+    </div>
+    {% endfor %}
+
+    <div>{{ message }}</div>
+</form>
+{% endblock %}

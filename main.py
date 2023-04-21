@@ -259,14 +259,6 @@ def chat(id):
         db_sess.add(chat)
         db_sess.commit()
 
-    messages = db_sess.query(Message).filter(Message.chat_id == chat.id).all()
-    files = {}
-    for msg in messages:
-        if msg.attached_file is not None:
-            file = db_sess.query(File).filter(File.id == msg.attached_file).first()
-            files[msg] = base64.b64encode(file.content)
-            print(files[msg])
-
     other = db_sess.query(User).filter(User.id == id).first()
 
     if request.method == "POST":
@@ -291,7 +283,28 @@ def chat(id):
             db_sess.commit()
             messages.append(msg)
 
-    return render_template('chat.html', title=other.username, messages=messages, other=other, message='', files=files)
+    messages = db_sess.query(Message).filter(Message.chat_id == chat.id).all()
+    images = {}
+    files = {}
+    for msg in messages:
+        if msg.attached_file is not None:
+            file = db_sess.query(File).filter(File.id == msg.attached_file).first()
+            if file is None:
+                print('no such file')
+                break
+            print(file.name.split('.')[-1])
+            if file.name.split('.')[-1] in ['png', 'jpg', 'bmp', 'gif', 'ico']:
+                if not os.access(f'static/files/{file.name}', os.F_OK):
+                    with open(f'static/files/{file.name}', 'wb') as f:
+                        f.write(file.content)
+                images[msg] = f'static/files/{file.name}'
+            else:
+                if not os.access(f'static/files/{file.name}', os.F_OK):
+                    with open(f'static/files/{file.name}', 'wb') as f:
+                        f.write(file.content)
+                files[msg] = file.name
+
+    return render_template('chat.html', title=other.username, messages=messages, other=other, message='', images=images, files=files, none=None)
 
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
@@ -333,6 +346,45 @@ def edit_profile():
         return redirect("/")
 
     return render_template('edit_profile.html', title=f'Редактировать профиль', form=form);
+
+
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+    if not current_user.is_authenticated:
+        return redirect("/login")
+    db_sess = db_session.create_session()
+    current_user.last_online = datetime.datetime.now()
+    db_sess.merge(current_user)
+    db_sess.commit()
+
+    users = []
+    show_apologizion = False
+
+    if request.method == "POST":
+        if request.form.get('searchParam') == 'username':
+            users = db_sess.query(User).filter(User.username.like(f"%{request.form.get('searchField')}%")).all()
+        elif request.form.get('searchParam') == 'city':
+            users = db_sess.query(User).filter(User.city.like(f"%{request.form.get('searchField')}%")).all()
+        elif request.form.get('searchParam') == 'email':
+            users = db_sess.query(User).filter(User.email.like(f"%{request.form.get('searchField')}%")).all()
+
+        if len(users) > 20:
+            users = users[:20]
+
+        show_apologizion = True
+
+    return render_template('search.html', title='Поиск', users=users, apolog=show_apologizion)
+
+
+@app.route('/read_file/<filename>', methods=['GET'])
+def read_file(filename):
+    path = f'static/files/{filename}'
+    if os.access(path, os.F_OK):
+        with open(path, encoding='utf-8') as file:
+            content = file.read()
+            content.replace('\n', '<br />')
+            return render_template('read_file.html', filename=filename, found=os.access(path, os.F_OK), content=content)
+    return render_template('read_file.html', filename=filename, found=os.access(path, os.F_OK), content=content, message='Мы не нашли этот файл.')
 
 
 def main():

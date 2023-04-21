@@ -8,15 +8,18 @@
     </div>
 
     <div data-bs-spy="scroll" data-bs-target="#name-bar" data-bs-offset="1000" class="scrollspy-example" tabindex="0" style="background-color: #d5dcff; width: 50vw; height: 600px">
-        <p style="text-align: center; margin-left: 30px; margin-right: 30px; margin-bottom: 30px;">Welcome to the club, buddy</p>
         {% for msg in messages %}
         {% if msg.sender_id == other.id %}
         <div style="border-block: solid; background-color: #9292d1; text-align: left; margin-top: 20px; margin-left: 30px; margin-right: 30px;">
             <p style="color: #5353d7; font-weight: bold; font-size: 16px; margin-left: 30px; margin-right: 30px;">{{other.username}}</p>
             <p style="font-size: 18px; text-align: left; margin-left: 30px; margin-right: 30px; ">{{msg.decode_text(msg.coded_text)}}</p>
-            <p style="color: #5c5c5c; font-size: 14px; text-align: right; margin-left: 30px; margin-right: 30px; ">{{msg.send_time.day}}/{{msg.send_time.month}}/{{msg.send_time.year}} {{msg.send_time.hour}}:{{msg.send_time.minute}}</p>
-            {% if msg.file is not None %}
-            <img src="data:image/png;base64,{{files[msg]}}">
+            <p style="color: #5c5c5c; font-size: 14px; text-align: left; margin-left: 30px; margin-right: 30px; ">{{msg.send_time.day}}/{{msg.send_time.month}}/{{msg.send_time.year}} {{msg.send_time.hour}}:{{msg.send_time.minute}}</p>
+            {% if msg.file != none %}
+            {% if images.get(msg) != none %}
+            <img src="{{images[msg]}}" alt="Failed to load this image">
+            {% else %}
+            <a href="/read_file/{{files[msg]}}" style="color: #23235e; font-size: 16px; text-align: left; margin-left: 30px; "><span class="fa fa-file"></span>{{files[msg]}}</a>
+            {% endif %}
             {% endif %}
         </div>
         {% else %}
@@ -24,8 +27,13 @@
             <p style="color: #5353d7; font-weight: bold; font-size: 16px; margin-left: 30px; margin-right: 30px;">{{current_user.username}}</p>
             <p style="font-size: 18px; text-align: right; margin-left: 30px; margin-right: 30px; ">{{msg.decode_text(msg.coded_text)}}</p>
             <p style="color: #5c5c5c; font-size: 14px; text-align: right; margin-left: 30px; margin-right: 30px; ">{{msg.send_time.day}}/{{msg.send_time.month}}/{{msg.send_time.year}} {{msg.send_time.hour}}:{{msg.send_time.minute}}</p>
-            <img src="data:image/gif;base64,R0lGODlhDQAMANUAAFRVVtHd74S192aZzHqVuLq0rvf39+zr6bXI4qizwufdz5WhsmSt/5rC+r3Ezm1zeJiSjmum8tzm9bvZ/6bB5a6qpn+t5dvVzZK88+v8/7vg/7DJ4P/99V5gY8zMzObm5ofD/6zQ/3Fua8fX69fm+vDy9OPi4czh/4SXrJLC/////+7u7Wmt/87f9oG2/5Oku5mZmf///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAUUADEALAAAAAANAAwAAAZTwJhwSIwhDsUixZEkWhLNYeQVjYUYBIVKSCKeGIOCymCISTATISsCu5RKW1VAkHKBUBDToRxTcUYNGhsdFR8GW0IqJS0ZDyIrh0kqCwBIVR4eTUEAOw==" />
-            <img src="data:image/png;base64,{{files[msg]}}">
+            {% if msg.file != none %}
+            {% if images.get(msg) != none %}
+            <img src="{{images[msg]}}" alt="Failed to load this image">
+            {% else %}
+            <a href="/read_file/{{files[msg]}}" style="color: #23235e; font-size: 16px; text-align: right; margin-right: 30px; "><span class="fa fa-file"></span>{{files[msg]}}</a>
+            {% endif %}
+            {% endif %}
         </div>
         {% endif %}
         {% endfor %}
