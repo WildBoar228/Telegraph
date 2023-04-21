@@ -1,14 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-<form action="" method="post">
-    <h1 style="font-size: 14px; margin-top: 10px;">{{filename}}</h1>
+<h1 style="font-size: 14px; margin-top: 10px;">{{filename}}</h1>
 
-    {% if found %}
-    <p style="font-size: 30px; width: 50vw; word-wrap: break-word; text-align: center;"><b>{{filename}}</b></p>
-    <p style="font-size: 18px; width: 50vw; word-wrap: break-word;">{{content}}</p>
-    {% endif %}
+{% if found %}
+<p style="font-size: 30px; width: 50vw; word-wrap: break-word; text-align: center;"><b>{{filename}}</b></p>
+<p style="font-size: 18px; width: 50vw; word-wrap: break-word;">{{content}}</p>
+{% endif %}
 
-    <p style="font-size: 18px; color: #9292d1">{{message}}</p>
-</form>
+<p style="font-size: 18px; color: #9292d1">{{message}}</p>
 {% endblock %}

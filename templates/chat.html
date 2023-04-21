@@ -14,12 +14,11 @@
             <p style="color: #5353d7; font-weight: bold; font-size: 16px; margin-left: 30px; margin-right: 30px;">{{other.username}}</p>
             <p style="font-size: 18px; text-align: left; margin-left: 30px; margin-right: 30px; ">{{msg.decode_text(msg.coded_text)}}</p>
             <p style="color: #5c5c5c; font-size: 14px; text-align: left; margin-left: 30px; margin-right: 30px; ">{{msg.send_time.day}}/{{msg.send_time.month}}/{{msg.send_time.year}} {{msg.send_time.hour}}:{{msg.send_time.minute}}</p>
-            {% if msg.file != none %}
-            {% if images.get(msg) != none %}
+            
+            {% if images.get(msg) %}
             <img src="{{images[msg]}}" alt="Failed to load this image">
-            {% else %}
+            {% elif files.get(msg) %}
             <a href="/read_file/{{files[msg]}}" style="color: #23235e; font-size: 16px; text-align: left; margin-left: 30px; "><span class="fa fa-file"></span>{{files[msg]}}</a>
-            {% endif %}
             {% endif %}
         </div>
         {% else %}
@@ -27,12 +26,11 @@
             <p style="color: #5353d7; font-weight: bold; font-size: 16px; margin-left: 30px; margin-right: 30px;">{{current_user.username}}</p>
             <p style="font-size: 18px; text-align: right; margin-left: 30px; margin-right: 30px; ">{{msg.decode_text(msg.coded_text)}}</p>
             <p style="color: #5c5c5c; font-size: 14px; text-align: right; margin-left: 30px; margin-right: 30px; ">{{msg.send_time.day}}/{{msg.send_time.month}}/{{msg.send_time.year}} {{msg.send_time.hour}}:{{msg.send_time.minute}}</p>
-            {% if msg.file != none %}
-            {% if images.get(msg) != none %}
+            
+            {% if images.get(msg) %}
             <img src="{{images[msg]}}" alt="Failed to load this image">
-            {% else %}
-            <a href="/read_file/{{files[msg]}}" style="color: #23235e; font-size: 16px; text-align: right; margin-right: 30px; "><span class="fa fa-file"></span>{{files[msg]}}</a>
-            {% endif %}
+            {% elif files.get(msg) %}
+            <a href="/read_file/{{files[msg]}}" style="color: #23235e; font-size: 16px; text-align: right; margin-left: 30px; "><span class="fa fa-file"></span>{{files[msg]}}</a>
             {% endif %}
         </div>
         {% endif %}

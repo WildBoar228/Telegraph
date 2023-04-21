@@ -261,6 +261,10 @@ def chat(id):
 
     other = db_sess.query(User).filter(User.id == id).first()
 
+    messages = db_sess.query(Message).filter(Message.chat_id == chat.id).all()
+    images = {}
+    files = {}
+
     if request.method == "POST":
         file = request.files.get('file')
         print(file)
@@ -283,9 +287,6 @@ def chat(id):
             db_sess.commit()
             messages.append(msg)
 
-    messages = db_sess.query(Message).filter(Message.chat_id == chat.id).all()
-    images = {}
-    files = {}
     for msg in messages:
         if msg.attached_file is not None:
             file = db_sess.query(File).filter(File.id == msg.attached_file).first()
