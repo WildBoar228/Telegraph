@@ -6,12 +6,14 @@
 
     {% for request in requests %}
     <div class="col-md6 border rounded">
-        <label style="font-size: 30px; color: #5353d7">{{request.sender_name}} </label>
-        <label style="font-size: 30px; color: #9292d1"> ({{request.from_id}})</label>
-        <p style="font-size: 20px; color: #9292d1">{{request.text}}</p>
-        <p style="font-size: 15px; color: #9292d1">{{request.date.day}}/{{request.date.month}}/{{request.date.year}} {{request.date.hour}}:{{request.date.minute}}</p>
-        <a href="/accept_request/{{request.id}}" class="btn btn-primary" style="font-size: 18px; background-color: #5353d7">Accept</a>
-        <a href="/reject_request/{{request.id}}" class="btn btn-secondary" style="font-size: 18px; background-color: #9292d1">Reject</a>
+        <label style="font-size: 30px; color: #5353d7; margin-left: 20px; margin-right: 20px;">{{request.sender_name}} </label>
+        <label style="font-size: 30px; color: #9292d1; margin-left: 20px; margin-right: 20px;"> ({{request.from_id}})</label>
+        <p style="font-size: 20px; color: #9292d1; word-wrap: break-word; margin-left: 20px; margin-right: 20px;">{{request.text}}</p>
+        <p style="font-size: 15px; color: #9292d1">{{request.date.strftime('%d/%m/%Y %H:%M')}}</p>
+        <p style="margin-left: 20px; margin-right: 20px;">
+            <a href="/accept_request/{{request.id}}" class="btn btn-primary" style="font-size: 18px; background-color: #5353d7">Accept</a>
+            <a href="/reject_request/{{request.id}}" class="btn btn-secondary" style="font-size: 18px; background-color: #9292d1">Reject</a>
+        </p>
     </div>
     {% endfor %}
 

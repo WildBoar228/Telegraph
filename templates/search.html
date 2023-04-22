@@ -18,7 +18,7 @@
     {% endif %}
 
     {% for user in users %}
-    <div class="col-md6 border rounded">
+    <div class="col-md6 border rounded" style="margin-bottom: 10px; margin-top: 10px">
         <a href="/profile/{{user.id}}" style="font-size: 24px; color: #5353d7;"><b>{{user.username}}</b></a>
         <p style="font-size: 18px; color: #9292d1;">{{user.city}}, {{user.count_age()}} years old</p>
         <p style="font-size: 18px; color: #9292d1;">{{user.email}}</p>

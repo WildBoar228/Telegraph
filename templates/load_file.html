@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form action="" method="post" enctype="multipart/form-data">
+    <p style="font-size: 30px; font-weight: bold; width: 50vw; word-wrap: break-word; text-align: center;">Load file {{file.name}}</p>
+    <div class="card card-body form-group">
+        <label for="photo">Choose directory to load this file.</label>
+        <input type="text" placeholder="Enter path..." id="dir" name="dir">
+    </div>
+    <input class="button btn-primary" type="submit" value="Save" name="save_button" style="background-color: #5353d7" />
+
+    <div>{{ message }}</div>
+</form>
+{% endblock %}

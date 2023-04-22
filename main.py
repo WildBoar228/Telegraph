@@ -56,6 +56,12 @@ def main_page():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        db_sess = db_session.create_session()
+        current_user.last_online = datetime.datetime.now()
+        db_sess.merge(current_user)
+        db_sess.commit()
+
     form = LoginForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
@@ -71,6 +77,12 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if current_user.is_authenticated:
+        db_sess = db_session.create_session()
+        current_user.last_online = datetime.datetime.now()
+        db_sess.merge(current_user)
+        db_sess.commit()
+
     form = RegisterForm()
     if form.bdate.data == None:
         form.bdate.data = datetime.datetime(datetime.datetime.now().year,
@@ -126,6 +138,22 @@ def profile(id):
     if user is None:
         abort(404, message="Пользователя с таким id пока не существует")
 
+    if request.method == 'POST':
+        req = db_sess.query(FriendshipRequest).filter(FriendshipRequest.to_id == current_user.id,
+                                                       FriendshipRequest.from_id == id).first()
+        if request.form.get('accept-request') is not None:
+            current_user.friends += ', ' + str(id)
+            user.friends += ', ' + str(current_user.id)
+
+            db_sess.merge(current_user)
+            db_sess.merge(user)
+            db_sess.delete(req)
+            db_sess.commit()
+
+        if request.form.get('reject-request') is not None:
+            db_sess.delete(req)
+            db_sess.commit()
+
     friends = []
     ids = user.friends.split(', ')
     if '' in ids:
@@ -135,11 +163,13 @@ def profile(id):
         if friend is not None:
             friends.append(friend)
 
-    request = db_sess.query(FriendshipRequest).filter(FriendshipRequest.from_id == current_user.id,
-                                                      FriendshipRequest.to_id == id).first()
+    our_request = db_sess.query(FriendshipRequest).filter(FriendshipRequest.from_id == current_user.id,
+                                                          FriendshipRequest.to_id == id).first()
+    his_request = db_sess.query(FriendshipRequest).filter(FriendshipRequest.to_id == current_user.id,
+                                                          FriendshipRequest.from_id == id).first()
 
     print(user.id)
-    return render_template('profile.html', title=f'Пользователь {id}', user=user, friends=friends, is_request=request is not None);
+    return render_template('profile.html', title=f'Пользователь {id}', user=user, friends=friends, is_our_request=our_request is not None, is_his_request=his_request is not None, request=his_request);
 
 
 @app.route('/friendship_request/<int:id>', methods=['GET', 'POST'])
@@ -266,15 +296,16 @@ def chat(id):
     files = {}
 
     if request.method == "POST":
+        print(request.files)
         file = request.files.get('file')
-        print(file)
-        if request.form.get('message_button') and request.form.get('message_text') != '':
+        filename = request.files.get('file').filename
+        if request.form.get('message_button') and (request.form.get('message_text') != '' or filename != ''):
             msg = Message(
                 chat_id = chat.id,
                 sender_id = current_user.id,
                 send_time = datetime.datetime.now())
             msg.coded_text = msg.code_text(request.form.get('message_text'))
-            if file is not None:
+            if filename != '':
                 file_obj = File(
                     avaible_for = f'{current_user.id}, {other.id}',
                     name = file.filename,
@@ -282,7 +313,7 @@ def chat(id):
                 db_sess.add(file_obj)
                 db_sess.commit()
                 file_id = file_obj.id
-            msg.attached_file = file_id
+                msg.attached_file = file_id
             db_sess.add(msg)
             db_sess.commit()
             messages.append(msg)
@@ -293,17 +324,15 @@ def chat(id):
             if file is None:
                 print('no such file')
                 break
-            print(file.name.split('.')[-1])
             if file.name.split('.')[-1] in ['png', 'jpg', 'bmp', 'gif', 'ico']:
                 if not os.access(f'static/files/{file.name}', os.F_OK):
                     with open(f'static/files/{file.name}', 'wb') as f:
                         f.write(file.content)
-                images[msg] = f'static/files/{file.name}'
+                images[msg] = (file, file.path == '', f'static/files/{file.name}')
             else:
-                if not os.access(f'static/files/{file.name}', os.F_OK):
-                    with open(f'static/files/{file.name}', 'wb') as f:
-                        f.write(file.content)
-                files[msg] = file.name
+                files[msg] = (file, file.path == '')
+            print(images.get(msg))
+            print(files.get(msg))
 
     return render_template('chat.html', title=other.username, messages=messages, other=other, message='', images=images, files=files, none=None)
 
@@ -377,15 +406,66 @@ def search():
     return render_template('search.html', title='Поиск', users=users, apolog=show_apologizion)
 
 
-@app.route('/read_file/<filename>', methods=['GET'])
-def read_file(filename):
-    path = f'static/files/{filename}'
-    if os.access(path, os.F_OK):
-        with open(path, encoding='utf-8') as file:
-            content = file.read()
-            content.replace('\n', '<br />')
-            return render_template('read_file.html', filename=filename, found=os.access(path, os.F_OK), content=content)
-    return render_template('read_file.html', filename=filename, found=os.access(path, os.F_OK), content=content, message='Мы не нашли этот файл.')
+@app.route('/load_file/<int:file_id>', methods=['GET', 'POST'])
+def load_file(file_id):
+    db_sess = db_session.create_session()
+    if current_user.is_authenticated:
+        current_user.last_online = datetime.datetime.now()
+        db_sess.merge(current_user)
+        db_sess.commit()
+
+    file = db_sess.query(File).filter(File.id == file_id).first()
+    print('button: ', request.form.get('save_button'))
+    
+    if request.method == "POST":
+        directory = request.form.get('dir')
+        if request.form.get('save_button') is not None:
+            if os.path.isdir(directory):
+                with open(directory + '/' + file.name, 'wb') as f:
+                    f.write(file.content)
+            else:
+                return render_template('load_file.html', file=file, message='This path doesn\'t exist')
+            file.path = directory
+            db_sess.merge(file)
+            db_sess.commit()
+            return render_template('load_file.html', file=file, message='File was saved successfully')
+
+    return render_template('load_file.html', file=file)
+
+
+@app.route('/my_chats', methods=['GET'])
+def my_chats():
+    if not current_user.is_authenticated:
+        return redirect("/login")
+    db_sess = db_session.create_session()
+    current_user.last_online = datetime.datetime.now()
+    db_sess.merge(current_user)
+    db_sess.commit()
+
+    chats = []
+    others = {}
+    last_sender = {}
+    last_msg = {}
+    for chat in db_sess.query(Chat).all():
+        if str(current_user.id) in chat.collaborators.split(', '):
+            chats.append(chat)
+            other = chat.collaborators.split(', ')
+            other.remove(str(current_user.id))
+            others[chat] = db_sess.query(User).filter(User.id == int(other[0])).first()
+
+            messages = db_sess.query(Message).filter(Message.chat_id == chat.id).all()
+            if len(messages) > 0:
+                last = max(messages, key=lambda m: m.send_time)
+                last_sender[chat] = db_sess.query(User).filter(User.id == last.sender_id).first()
+                text = last.decode_text(last.coded_text)
+                if len(text) > 50:
+                    text = text[:47] + '...'
+                last_msg[chat] = text
+            else:
+                last_sender[chat] = ''
+                last_msg[chat] = ''
+
+    return render_template('my_chats.html', chats=chats, others=others, last_sender=last_sender, last_msg=last_msg)
 
 
 def main():

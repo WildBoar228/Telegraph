@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form action="" method="post" enctype="multipart/form-data">
+    <p style="font-size: 30px; color: #5353d7; font-weight: bold; text-align: center;">Your chats</p>
+
+    {% if chats == [] %}
+    <p style="font-size: 18px; color: #9292d1">You don't have any chats yet.</p>
+    <p style="font-size: 18px; color: #9292d1">Try to find some companions.</p>
+    <a class="btn btn-primary" href="/search" style="background-color: #5353d7"><span class="fa fa-search" style="margin-right: 10px"></span>Search people</a>
+    {% endif %}
+
+    {% for chat in chats %}
+    <div class="col-md6 border rounded" style="background-color: #e4e4e4; margin-bottom: 10px; margin-top: 10px">
+        <a href="/chat/{{others[chat].id}}" style="">
+            <p style="color: #5353d7; font-weight: bold; font-size: 20px;">{{others[chat].username}}</p>
+            {% if last_sender[chat].username != '' and last_msg[chat] != '' %}
+            <label style="color: #5353d7; font-size: 16px; margin-left: 30px;">{{last_sender[chat].username}}:</label>
+            <label style="font-size: 16px; margin-left: 30px; margin-right: 30px;">{{last_msg[chat]}}</label>
+            {% else %}
+            <label style="color: #5353d7; font-size: 16px; margin-left: 30px;">No messages</label>
+            {% endif %}
+        </a>
+    </div>
+    {% endfor %}
+
+    <div>{{ message }}</div>
+</form>
+{% endblock %}
