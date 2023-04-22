@@ -2,12 +2,12 @@
 
 {% block content %}
 <form action="" method="post" enctype="multipart/form-data">
-    <div id="name-bar" style="text-align: center; vertical-align: bottom; width: 50vw; height: 80px; background-color: #5353d7">
+    <div id="name-bar" style="text-align: center; vertical-align: bottom; width: 50vw; height: 80px; background-color: #5353d7;">
         <p style="font-size: 20px; color: #e4e4e4; font-weight: bold;">{{other.username}} <a href="/profile/{{other.id}}" style="color: #a0a0a0">(profile)</a></p>
         <p style="font-size: 15px; color: #e4e4e4;">Last online: {{other.last_online.day}}/{{other.last_online.month}}/{{other.last_online.year}} {{other.last_online.hour}}:{{other.last_online.minute}}</p>
     </div>
 
-    <div data-bs-spy="scroll" data-bs-target="#name-bar" data-bs-offset="1000" class="scrollspy-example" tabindex="0" style="background-color: #d5dcff; width: 50vw; height: 600px">
+    <div data-bs-target="#name-bar" style="background-color: #d5dcff; width: 50vw; height: 60vh; overflow: auto;">
         {% for msg in messages %}
         {% if msg.sender_id == other.id %}
         <div style="border-block: solid; background-color: #9292d1; text-align: left; margin-top: 20px; margin-left: 30px; margin-right: 30px;">
@@ -37,14 +37,16 @@
         {% endfor %}
     </div>
 
-    <input type="text" placeholder="Write your message..." name="message_text" size="100" />
-    <input class="button btn-primary" type="submit" value="Send" name="message_button" style="background-color: #5353d7" />
-    <p>
-        <div class="card card-body form-group">
-            <label for="photo">You can attach a picture or an other file.</label>
-            <input type="file" class="form-control-file" id="photo" name="file" value="Choose a photo">
-        </div>
-    </p>
+    <div>
+        <input type="text" placeholder="Write your message..." name="message_text" size="100"/>
+        <input class="button btn-primary" type="submit" value="Send" name="message_button" style="background-color: #5353d7" />
+        <p>
+            <div class="card card-body form-group">
+                <label for="photo">You can attach a picture or an other file.</label>
+                <input type="file" class="form-control-file" id="photo" name="file" value="Choose a photo">
+            </div>
+        </p>
+    </div>
 
     <div>{{ message }}</div>
 </form>
