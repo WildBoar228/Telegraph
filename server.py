@@ -1,13 +1,8 @@
 from flask import Flask, render_template, redirect, url_for, request
 from flask_login import (LoginManager, current_user, login_user, logout_user,
                          login_required)
-from flask_restful import reqparse, abort, Api, Resource
 
-from flask_wtf import FlaskForm
-from wtforms import EmailField, PasswordField, StringField, IntegerField, SubmitField
-from wtforms.validators import DataRequired
-
-from data import db_session
+from data import db_session, user_api
 from data.users import User
 from data.friend_request import FriendshipRequest
 from data.messages import Message
@@ -20,12 +15,9 @@ from data.edit_profile_form import EditProfileForm
 
 import datetime
 import os
-import base64
-
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
-api = Api(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -50,8 +42,9 @@ def main_page():
         friend = db_sess.query(User).filter(User.id == friend_id).first()
         if friend is not None:
             friends.append(friend)
-
-    return render_template('main_page.html', title=f'Главная', friends=friends);
+            
+    root = '/'.join(request.url.split('/')[:-1])
+    return render_template('main_page.html', title=f'Главная', friends=friends, url=root);
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -72,7 +65,9 @@ def login():
         return render_template('login.html',
                                message="Неправильный логин или пароль. Возможно, вы ещё не зарегистрированы.",
                                form=form)
-    return render_template('login.html', title='Авторизация', form=form)
+
+    root = '/'.join(request.url.split('/')[:-1])
+    return render_template('login.html', title='Авторизация', form=form, url=root)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -122,8 +117,9 @@ def register():
 
         login_user(user, remember=True)
         return redirect("/")
-
-    return render_template('register.html', title='Регистрация', form=form)
+    
+    root = '/'.join(request.url.split('/')[:-1])
+    return render_template('register.html', title='Регистрация', form=form, url=root)
 
 
 @app.route('/profile/<int:id>', methods=['GET', 'POST'])
@@ -167,9 +163,9 @@ def profile(id):
                                                           FriendshipRequest.to_id == id).first()
     his_request = db_sess.query(FriendshipRequest).filter(FriendshipRequest.to_id == current_user.id,
                                                           FriendshipRequest.from_id == id).first()
-
-    print(user.id)
-    return render_template('profile.html', title=f'Пользователь {id}', user=user, friends=friends, is_our_request=our_request is not None, is_his_request=his_request is not None, request=his_request);
+    
+    root = '/'.join(request.url.split('/')[:-2])
+    return render_template('profile.html', title=f'Пользователь {id}', user=user, friends=friends, is_our_request=our_request is not None, is_his_request=his_request is not None, request=his_request, url=root);
 
 
 @app.route('/friendship_request/<int:id>', methods=['GET', 'POST'])
@@ -202,8 +198,9 @@ def friendship(id):
         db_sess.commit()
 
         return redirect(f"/profile/{id}")
-
-    return render_template('friendship_request.html', title='Запрос на дружбу', form=form)
+    
+    root = '/'.join(request.url.split('/')[:-2])
+    return render_template('friendship_request.html', title='Запрос на дружбу', form=form, url=root)
 
 
 @app.route('/my_requests', methods=['GET', 'POST'])
@@ -216,7 +213,8 @@ def my_requests():
     db_sess.commit()
 
     requests = list(db_sess.query(FriendshipRequest).filter(FriendshipRequest.to_id == current_user.id))
-    return render_template('my_requests.html', title='Запросы на вашу дружбу', requests=requests)
+    root = '/'.join(request.url.split('/')[:-1])
+    return render_template('my_requests.html', title='Запросы на вашу дружбу', requests=requests, url=root)
 
 
 @app.route('/accept_request/<int:id>', methods=['GET', 'POST'])
@@ -296,7 +294,6 @@ def chat(id):
     files = {}
 
     if request.method == "POST":
-        print(request.files)
         file = request.files.get('file')
         filename = request.files.get('file').filename
         if request.form.get('message_button') and (request.form.get('message_text') != '' or filename != ''):
@@ -322,7 +319,6 @@ def chat(id):
         if msg.attached_file is not None:
             file = db_sess.query(File).filter(File.id == msg.attached_file).first()
             if file is None:
-                print('no such file')
                 break
             if file.name.split('.')[-1] in ['png', 'jpg', 'bmp', 'gif', 'ico']:
                 if not os.access(f'static/files/{file.name}', os.F_OK):
@@ -331,10 +327,9 @@ def chat(id):
                 images[msg] = (file, file.path == '', f'static/files/{file.name}')
             else:
                 files[msg] = (file, file.path == '')
-            print(images.get(msg))
-            print(files.get(msg))
 
-    return render_template('chat.html', title=other.username, messages=messages, other=other, message='', images=images, files=files, none=None)
+    root = '/'.join(request.url.split('/')[:-2])
+    return render_template('chat.html', title=other.username, messages=messages, other=other, message='', images=images, files=files, none=None, url=root)
 
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
@@ -374,8 +369,9 @@ def edit_profile():
         db_sess.commit()
 
         return redirect("/")
-
-    return render_template('edit_profile.html', title=f'Редактировать профиль', form=form);
+    
+    root = '/'.join(request.url.split('/')[:-1])
+    return render_template('edit_profile.html', title=f'Редактировать профиль', form=form, url=root);
 
 
 @app.route('/search', methods=['GET', 'POST'])
@@ -402,8 +398,9 @@ def search():
             users = users[:20]
 
         show_apologizion = True
-
-    return render_template('search.html', title='Поиск', users=users, apolog=show_apologizion)
+    
+    root = '/'.join(request.url.split('/')[:-1])
+    return render_template('search.html', title='Поиск', users=users, apolog=show_apologizion, url=root)
 
 
 @app.route('/load_file/<int:file_id>', methods=['GET', 'POST'])
@@ -415,7 +412,6 @@ def load_file(file_id):
         db_sess.commit()
 
     file = db_sess.query(File).filter(File.id == file_id).first()
-    print('button: ', request.form.get('save_button'))
     
     if request.method == "POST":
         directory = request.form.get('dir')
@@ -429,8 +425,9 @@ def load_file(file_id):
             db_sess.merge(file)
             db_sess.commit()
             return render_template('load_file.html', file=file, message='File was saved successfully')
-
-    return render_template('load_file.html', file=file)
+    
+    root = '/'.join(request.url.split('/')[:-2])
+    return render_template('load_file.html', file=file, url=root)
 
 
 @app.route('/my_chats', methods=['GET'])
@@ -471,20 +468,21 @@ def my_chats():
             else:
                 last_sender[chat] = ''
                 last_msg[chat] = ''
-
-    return render_template('my_chats.html', chats=chats, others=others, last_sender=last_sender, last_msg=last_msg, last_files=last_files)
+                
+    root = '/'.join(request.url.split('/')[:-1])
+    return render_template('my_chats.html', chats=chats, others=others, last_sender=last_sender, last_msg=last_msg, last_files=last_files, url=root)
 
 
 def main():
     port = int(os.environ.get('PORT', 8080))
     
     db_session.global_init('db/users.db')
+    app.register_blueprint(user_api.blueprint)
     app.run(host='0.0.0.0', port=port)
 
 
 @login_manager.user_loader
 def load_user(user_id):
-    print(user_id)
     db_sess = db_session.create_session()
     return db_sess.query(User).get(user_id)
 
