@@ -446,6 +446,7 @@ def my_chats():
     others = {}
     last_sender = {}
     last_msg = {}
+    last_files = {}
     for chat in db_sess.query(Chat).all():
         if str(current_user.id) in chat.collaborators.split(', '):
             chats.append(chat)
@@ -459,13 +460,19 @@ def my_chats():
                 last_sender[chat] = db_sess.query(User).filter(User.id == last.sender_id).first()
                 text = last.decode_text(last.coded_text)
                 if len(text) > 50:
-                    text = text[:47] + '...'
+                    text = text[:47].rstrip('.') + '...'
+                if last.attached_file is not None:
+                    att_file = db_sess.query(File).filter(File.id == last.attached_file).first()
+                    filename = att_file.name
+                    if len(text) > 50 - len(filename) - 5:
+                        text = text[:(50 - len(filename) - 5)].rstrip('.') + '... ';
+                    last_files[chat] = filename
                 last_msg[chat] = text
             else:
                 last_sender[chat] = ''
                 last_msg[chat] = ''
 
-    return render_template('my_chats.html', chats=chats, others=others, last_sender=last_sender, last_msg=last_msg)
+    return render_template('my_chats.html', chats=chats, others=others, last_sender=last_sender, last_msg=last_msg, last_files=last_files)
 
 
 def main():
