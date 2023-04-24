@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request
+from flask import Flask, render_template, redirect, url_for, request, abort
 from flask_login import (LoginManager, current_user, login_user, logout_user,
                          login_required)
 
@@ -124,15 +124,17 @@ def register():
 
 @app.route('/profile/<int:id>', methods=['GET', 'POST'])
 def profile(id):
-    if current_user.is_authenticated:
-        current_user.last_online = datetime.datetime.now()
+    if not current_user.is_authenticated:
+        return redirect('/login')
+    
     db_sess = db_session.create_session()
     current_user.last_online = datetime.datetime.now()
     db_sess.merge(current_user)
     db_sess.commit()
+    
     user = db_sess.query(User).filter(User.id == id).first()
     if user is None:
-        abort(404, message="Пользователя с таким id пока не существует")
+        return "Пользователя с таким id пока не существует"
 
     if request.method == 'POST':
         req = db_sess.query(FriendshipRequest).filter(FriendshipRequest.to_id == current_user.id,

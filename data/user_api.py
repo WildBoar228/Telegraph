@@ -117,8 +117,6 @@ def edit_user(user_id):
         user.email = request.json.get('email')
     if request.json.get('free_chat') is not None:
         user.free_chat = request.json.get('free_chat')
-    if request.json.get('password') is not None:
-        user.set_password(request.json['password'])
     
     db_sess.merge(user)
     db_sess.commit()

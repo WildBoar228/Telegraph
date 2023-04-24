@@ -4,9 +4,8 @@
     "\\data",
     "\\static",
     "\\static\\css",
-    "\\static\\images",
     "\\templates"
   ],
-  "SelectedNode": "\\requirements.txt",
+  "SelectedNode": "\\data\\user_api.py",
   "PreviewInSolutionExplorer": false
 }
