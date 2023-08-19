@@ -330,6 +330,11 @@ def chat(id):
             else:
                 files[msg] = (file, file.path == '')
 
+        if msg.sender_id != current_user.id and not msg.is_read:
+            msg.is_read = True
+            db_sess.merge(msg)
+            db_sess.commit()
+
     root = '/'.join(request.url.split('/')[:-2])
     return render_template('chat.html', title=other.username, messages=messages, other=other, message='', images=images, files=files, none=None, url=root)
 
@@ -446,6 +451,7 @@ def my_chats():
     last_sender = {}
     last_msg = {}
     last_files = {}
+    unread_msgs = {}
     for chat in db_sess.query(Chat).all():
         if str(current_user.id) in chat.collaborators.split(', '):
             chats.append(chat)
@@ -454,6 +460,8 @@ def my_chats():
             others[chat] = db_sess.query(User).filter(User.id == int(other[0])).first()
 
             messages = db_sess.query(Message).filter(Message.chat_id == chat.id).all()
+            unread_count = len(db_sess.query(Message).filter(Message.chat_id == chat.id).filter(Message.is_read == 0).all())
+            unread_msgs[chat] = unread_count
             if len(messages) > 0:
                 last = max(messages, key=lambda m: m.send_time)
                 last_sender[chat] = db_sess.query(User).filter(User.id == last.sender_id).first()
@@ -472,7 +480,7 @@ def my_chats():
                 last_msg[chat] = ''
                 
     root = '/'.join(request.url.split('/')[:-1])
-    return render_template('my_chats.html', chats=chats, others=others, last_sender=last_sender, last_msg=last_msg, last_files=last_files, url=root)
+    return render_template('my_chats.html', chats=chats, others=others, last_sender=last_sender, last_msg=last_msg, last_files=last_files, unread_msgs=unread_msgs, url=root)
 
 
 def main():

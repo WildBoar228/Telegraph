@@ -18,6 +18,7 @@ class Message(SqlAlchemyBase, SerializerMixin):
                                   default=datetime.datetime.now)
     attached_file = sqlalchemy.Column(sqlalchemy.Integer, 
                                   sqlalchemy.ForeignKey("files.id"))
+    is_read = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
 
     def code_text(self, text):
         return ''.join([chr(ord(symb) + 19) for symb in text])

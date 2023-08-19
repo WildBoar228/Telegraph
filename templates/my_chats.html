@@ -12,18 +12,25 @@
 
     {% for chat in chats %}
     <div class="col-md6 border rounded" style="background-color: #e4e4e4; margin-bottom: 10px; margin-top: 10px">
-        <a href="/chat/{{others[chat].id}}" style="">
-            <p style="color: #5353d7; font-weight: bold; font-size: 20px;">{{others[chat].username}}</p>
-            {% if last_sender[chat] != '' %}
-            <label style="color: #5353d7; font-size: 16px; margin-left: 30px;">{{last_sender[chat].username}}:</label>
-            <label style="font-size: 16px; margin-left: 30px; margin-right: 30px;">{{last_msg[chat]}}</label>
-            {% if chat in last_files.keys() %}
-            <label style="font-size: 16px; margin-left: 30px; margin-right: 30px;"><span class="fa fa-file"></span> {{last_files[chat]}}</label>
-            {% endif %}
-            {% else %}
-            <label style="color: #5353d7; font-size: 16px; margin-left: 30px;">No messages</label>
-            {% endif %}
+        {% if unread_msgs[chat] > 0 %}
+        <p style="color: #ffffff"><span class="badge bg-secondary">New  <span class="badge rounded-pill bg-danger">{{unread_msgs[chat]}}</span></span></p>
+        {% endif %}
+        <a href="/profile/{{others[chat].id}}" style="color: #5353d7; font-weight: bold; font-size: 20px;">{{others[chat].username}}</a>
+        {% if last_sender[chat] != '' %}
+        <label style="color: #5353d7; font-size: 16px; margin-left: 30px;">{{last_sender[chat].username}}:</label>
+
+        {% if chat in last_files.keys() %}
+        <a href="/chat/{{others[chat].id}}" style="font-size: 16px; margin-left: 30px; margin-right: 30px;">
+            {{last_msg[chat]}}<label style="font-size: 16px; margin-left: 30px; margin-right: 30px;"><span class="fa fa-file"></span> {{last_files[chat]}}</label>
         </a>
+        {% else %}
+        <a href="/chat/{{others[chat].id}}" style="font-size: 16px; margin-left: 30px; margin-right: 30px;">
+            {{last_msg[chat]}}
+        </a>
+        {% endif %}
+        {% else %}
+        <label style="color: #5353d7; font-size: 16px; margin-left: 30px;">No messages</label>
+        {% endif %}
     </div>
     {% endfor %}
 

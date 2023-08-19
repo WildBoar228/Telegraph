@@ -45,6 +45,12 @@
             {% endif %}
 
             <p style="color: #5c5c5c; font-size: 14px; text-align: right; margin-left: 30px; margin-right: 30px; ">{{msg.send_time.strftime('%d/%m/%Y %H:%M')}}</p>
+
+            {% if msg.is_read %}
+            <p style="color: #5353d7; font-size: 16px; margin-left: 30px; margin-right: 30px;">Read</p>
+            {% else %}
+            <p style="color: #5c5c5c; font-size: 16px; margin-left: 30px; margin-right: 30px;">Sent</p>
+            {% endif %}
         </div>
         {% endif %}
         {% endfor %}
