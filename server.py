@@ -460,7 +460,7 @@ def my_chats():
             others[chat] = db_sess.query(User).filter(User.id == int(other[0])).first()
 
             messages = db_sess.query(Message).filter(Message.chat_id == chat.id).all()
-            unread_count = len(db_sess.query(Message).filter(Message.chat_id == chat.id).filter(Message.is_read == 0).all())
+            unread_count = len(db_sess.query(Message).filter(Message.chat_id == chat.id).filter(Message.is_read == 0).filter(Message.sender_id != current_user.id).all())
             unread_msgs[chat] = unread_count
             if len(messages) > 0:
                 last = max(messages, key=lambda m: m.send_time)
