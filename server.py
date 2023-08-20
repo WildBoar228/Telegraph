@@ -15,6 +15,7 @@ from data.edit_profile_form import EditProfileForm
 
 import datetime
 import os
+import platform
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -43,8 +44,7 @@ def main_page():
         if friend is not None:
             friends.append(friend)
             
-    root = '/'.join(request.url.split('/')[:-1])
-    return render_template('main_page.html', title=f'Главная', friends=friends, url=root);
+    return render_template('main_page.html', os_name=platform.system(), title=f'Главная', friends=friends);
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -66,8 +66,7 @@ def login():
                                message="Неправильный логин или пароль. Возможно, вы ещё не зарегистрированы.",
                                form=form)
 
-    root = '/'.join(request.url.split('/')[:-1])
-    return render_template('login.html', title='Авторизация', form=form, url=root)
+    return render_template('login.html', os_name=platform.system(), title='Авторизация', form=form)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -86,12 +85,12 @@ def register():
 
     if form.validate_on_submit():
         if form.password.data != form.password2.data:
-            return render_template('register.html', title='Регистрация',
+            return render_template('register.html', os_name=platform.system(), title='Регистрация',
                                    form=form,
                                    message="Пароли не совпадают")
         db_sess = db_session.create_session()
         if db_sess.query(User).filter(User.email == form.email.data).first():
-            return render_template('register.html', title='Регистрация',
+            return render_template('register.html', os_name=platform.system(), title='Регистрация',
                                    form=form,
                                    message="Пользователь с таким логином уже есть")
 
@@ -118,8 +117,7 @@ def register():
         login_user(user, remember=True)
         return redirect("/")
     
-    root = '/'.join(request.url.split('/')[:-1])
-    return render_template('register.html', title='Регистрация', form=form, url=root)
+    return render_template('register.html', os_name=platform.system(), title='Регистрация', form=form)
 
 
 @app.route('/profile/<int:id>', methods=['GET', 'POST'])
@@ -166,8 +164,7 @@ def profile(id):
     his_request = db_sess.query(FriendshipRequest).filter(FriendshipRequest.to_id == current_user.id,
                                                           FriendshipRequest.from_id == id).first()
     
-    root = '/'.join(request.url.split('/')[:-2])
-    return render_template('profile.html', title=f'Пользователь {id}', user=user, friends=friends, is_our_request=our_request is not None, is_his_request=his_request is not None, request=his_request, url=root);
+    return render_template('profile.html', os_name=platform.system(), title=f'Пользователь {id}', user=user, friends=friends, is_our_request=our_request is not None, is_his_request=his_request is not None, request=his_request);
 
 
 @app.route('/friendship_request/<int:id>', methods=['GET', 'POST'])
@@ -184,7 +181,7 @@ def friendship(id):
     if form.validate_on_submit():
         user = db_sess.query(User).filter(User.id == id).first()
         if user is None:
-            return render_template('friendship_request.html', title='Запрос на дружбу',
+            return render_template('friendship_request.html', os_name=platform.system(), title='Запрос на дружбу',
                                    form=form,
                                    message="Пользователь с таким логином не найден")
 
@@ -201,8 +198,7 @@ def friendship(id):
 
         return redirect(f"/profile/{id}")
     
-    root = '/'.join(request.url.split('/')[:-2])
-    return render_template('friendship_request.html', title='Запрос на дружбу', form=form, url=root)
+    return render_template('friendship_request.html', os_name=platform.system(), title='Запрос на дружбу', form=form)
 
 
 @app.route('/my_requests', methods=['GET', 'POST'])
@@ -215,8 +211,7 @@ def my_requests():
     db_sess.commit()
 
     requests = list(db_sess.query(FriendshipRequest).filter(FriendshipRequest.to_id == current_user.id))
-    root = '/'.join(request.url.split('/')[:-1])
-    return render_template('my_requests.html', title='Запросы на вашу дружбу', requests=requests, url=root)
+    return render_template('my_requests.html', os_name=platform.system(), title='Запросы на вашу дружбу', requests=requests)
 
 
 @app.route('/accept_request/<int:id>', methods=['GET', 'POST'])
@@ -335,8 +330,7 @@ def chat(id):
             db_sess.merge(msg)
             db_sess.commit()
 
-    root = '/'.join(request.url.split('/')[:-2])
-    return render_template('chat.html', title=other.username, messages=messages, other=other, message='', images=images, files=files, none=None, url=root)
+    return render_template('chat.html', os_name=platform.system(), title=other.username, messages=messages, other=other, message='', images=images, files=files, none=None)
 
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
@@ -377,8 +371,7 @@ def edit_profile():
 
         return redirect("/")
     
-    root = '/'.join(request.url.split('/')[:-1])
-    return render_template('edit_profile.html', title=f'Редактировать профиль', form=form, url=root);
+    return render_template('edit_profile.html', os_name=platform.system(), title=f'Редактировать профиль', form=form);
 
 
 @app.route('/search', methods=['GET', 'POST'])
@@ -406,8 +399,7 @@ def search():
 
         show_apologizion = True
     
-    root = '/'.join(request.url.split('/')[:-1])
-    return render_template('search.html', title='Поиск', users=users, apolog=show_apologizion, url=root)
+    return render_template('search.html', os_name=platform.system(), title='Поиск', users=users, apolog=show_apologizion)
 
 
 @app.route('/load_file/<int:file_id>', methods=['GET', 'POST'])
@@ -433,8 +425,7 @@ def load_file(file_id):
             db_sess.commit()
             return render_template('load_file.html', file=file, message='File was saved successfully')
     
-    root = '/'.join(request.url.split('/')[:-2])
-    return render_template('load_file.html', file=file, url=root)
+    return render_template('load_file.html', os_name=platform.system(), file=file)
 
 
 @app.route('/my_chats', methods=['GET'])
@@ -479,8 +470,7 @@ def my_chats():
                 last_sender[chat] = ''
                 last_msg[chat] = ''
                 
-    root = '/'.join(request.url.split('/')[:-1])
-    return render_template('my_chats.html', chats=chats, others=others, last_sender=last_sender, last_msg=last_msg, last_files=last_files, unread_msgs=unread_msgs, url=root)
+    return render_template('my_chats.html', os_name=platform.system(), chats=chats, others=others, last_sender=last_sender, last_msg=last_msg, last_files=last_files, unread_msgs=unread_msgs)
 
 
 def main():
