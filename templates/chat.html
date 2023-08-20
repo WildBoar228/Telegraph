@@ -7,7 +7,7 @@
         <p style="font-size: 15px; color: #e4e4e4;">Last online: {{other.last_online.strftime('%d/%m/%Y %H:%M')}}</p>
     </div>
 
-    <div style="background-color: #d5dcff; width: 90vw; height: 60vh; overflow: auto;">
+    <div style="background-color: #d5dcff; width: 90vw; height: 60vh; overflow: auto;" id="chat">
         {% for msg in messages %}
         {% if msg.sender_id == other.id %}
         <div class="card card-body" style="background-color: #9292d1; text-align: left; margin-top: 20px; margin-left: 5vw; margin-right: 20vw;">
@@ -55,6 +55,11 @@
         {% endif %}
         {% endfor %}
     </div>
+
+    <script>
+        var block = document.getElementById("chat");
+        block.scrollTop = block.scrollHeight;
+    </script>
 
     <div>
         <input type="text" placeholder="Write your message..." name="message_text" style="width: 90vw; font-size: 14px;"/>
