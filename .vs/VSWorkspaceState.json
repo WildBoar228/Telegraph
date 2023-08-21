@@ -2,10 +2,10 @@
   "ExpandedNodes": [
     "",
     "\\data",
+    "\\db",
     "\\static",
     "\\static\\css",
     "\\templates"
   ],
-  "SelectedNode": "\\server.py",
   "PreviewInSolutionExplorer": false
 }
