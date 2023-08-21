@@ -2,9 +2,11 @@
 
 {% block content %}
 <form action="" method="post">
-    <label style="font-size: 36px; font-weight: bold;">Welcome to Telegraph, </label>
-    <label style="font-size: 36px; font-weight: bold; color: #5353d7;">{{ current_user.username }}</label>
-    <label style="font-size: 36px; font-weight: bold;">!</label>
+    {% if current_user.id == 1 %}
+    <label style="font-size: 36px; font-weight: bold; color: #2b8b4b">Welcome to Telegraph, Boss!</label>
+    {% else %}
+    <label style="font-size: 36px; font-weight: bold;">Welcome to Telegraph, <label style="font-size: 36px; font-weight: bold; color: #5353d7;">{{ current_user.username }}</label>!</label>
+    {% endif %}
 
     <p><a class="btn btn-primary" href="/search" style="background-color: #5353d7"><span class="fa fa-search" style="margin-right: 10px"></span>Search people</a></p>
     <p><a class="btn btn-primary" href="/my_chats" style="background-color: #5353d7"><span class="fa fa-commenting" style="margin-right: 10px"></span>My chats</a></p>

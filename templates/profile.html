@@ -3,7 +3,20 @@
 {% block content %}
 <form action="" method="post">
     <h1 style="font-size: 14px; margin-top: 10px;">{{title}}</h1>
-    <label style="font-size: 30px; color: #5353d7"><span class="fa fa-user" style="margin-right: 10px"></span>{{ user.username }}</label>
+
+    {% if user.id == 1 %}
+    <p style="color: #2b8b4b; font-size: 24px;"><i class="fa fa-check"></i>  It's official page of Telegraf.</p>
+    {% endif %}
+
+    <label style="font-size: 30px; color: #5353d7"><span class="fa fa-user" style="margin-right: 10px"></span>{{ user.username }}    </label>
+    {% if user.is_verified %}
+    <span style="color: #2b8b4b; font-size: 30px" class="fa fa-check"></span>
+    {% endif %}
+
+    {% if user.is_blocked %}
+    <label style="font-size: 30px; color: #ff0000">    (blocked)</label>
+    {% endif %}
+
     {% if current_user.is_authenticated and user == current_user %}
     <label style="font-size: 30px; color: #2b8b4b; margin-left: 20px">(You)</label>
     {% endif %}

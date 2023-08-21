@@ -21,6 +21,9 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
                                     default=datetime.datetime.now())
     free_chat = sqlalchemy.Column(sqlalchemy.Boolean)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
+    is_verified = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    is_blocked = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    block_reason = sqlalchemy.Column(sqlalchemy.String)
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)

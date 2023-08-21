@@ -65,10 +65,14 @@ def login():
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.email == form.email.data).first()
+        if user and user.is_blocked:
+            return render_template('login.html', is_mobile=is_mobile,
+                                   message=f"Сожалеем, но, кажется, этот пользователь был заблокирован. Причина: {user.block_reason}",
+                                   form=form)
         if user and user.check_password(form.password.data):
             login_user(user, remember=True)
             return redirect("/")
-        return render_template('login.html',
+        return render_template('login.html', is_mobile=is_mobile,
                                message="Неправильный логин или пароль. Возможно, вы ещё не зарегистрированы.",
                                form=form)
 
@@ -131,22 +135,21 @@ def register():
 
 @app.route('/profile/<int:id>', methods=['GET', 'POST'])
 def profile(id):
-    if not current_user.is_authenticated:
-        return redirect('/login')
-
     agent = request.headers.get('User-Agent')
     is_mobile = ('iphone' or 'android' or 'blackberry') in agent.lower()
     
     db_sess = db_session.create_session()
-    current_user.last_online = datetime.datetime.now()
-    db_sess.merge(current_user)
-    db_sess.commit()
+    
+    if current_user.is_authenticated:
+        current_user.last_online = datetime.datetime.now()
+        db_sess.merge(current_user)
+        db_sess.commit()
     
     user = db_sess.query(User).filter(User.id == id).first()
     if user is None:
         return "Пользователя с таким id пока не существует"
 
-    if request.method == 'POST':
+    if request.method == 'POST' and current_user.is_authenticated:
         req = db_sess.query(FriendshipRequest).filter(FriendshipRequest.to_id == current_user.id,
                                                        FriendshipRequest.from_id == id).first()
         if request.form.get('accept-request') is not None:
@@ -171,10 +174,13 @@ def profile(id):
         if friend is not None:
             friends.append(friend)
 
-    our_request = db_sess.query(FriendshipRequest).filter(FriendshipRequest.from_id == current_user.id,
-                                                          FriendshipRequest.to_id == id).first()
-    his_request = db_sess.query(FriendshipRequest).filter(FriendshipRequest.to_id == current_user.id,
-                                                          FriendshipRequest.from_id == id).first()
+    our_request = None
+    his_request = None
+    if current_user.is_authenticated:
+        our_request = db_sess.query(FriendshipRequest).filter(FriendshipRequest.from_id == current_user.id,
+                                                              FriendshipRequest.to_id == id).first()
+        his_request = db_sess.query(FriendshipRequest).filter(FriendshipRequest.to_id == current_user.id,
+                                                              FriendshipRequest.from_id == id).first()
     
     return render_template('profile.html', is_mobile=is_mobile, title=f'Пользователь {id}', user=user, friends=friends, is_our_request=our_request is not None, is_his_request=his_request is not None, request=his_request);
 
@@ -346,7 +352,7 @@ def chat(id):
                 if not os.access(f'static/files/{file.name}', os.F_OK):
                     with open(f'static/files/{file.name}', 'wb') as f:
                         f.write(file.content)
-                images[msg] = (file, file.path == '', f'static/files/{file.name}')
+                images[msg] = (file, file.path == '', f'files/{file.name}')
             else:
                 files[msg] = (file, file.path == '')
 
@@ -480,6 +486,7 @@ def my_chats():
     last_msg = {}
     last_files = {}
     unread_msgs = {}
+    last_times = {}
     for chat in db_sess.query(Chat).all():
         if str(current_user.id) in chat.collaborators.split(', '):
             chats.append(chat)
@@ -503,17 +510,38 @@ def my_chats():
                         text = text[:(50 - len(filename) - 5)].rstrip('.') + '... ';
                     last_files[chat] = filename
                 last_msg[chat] = text
+                last_times[chat] = last.send_time
             else:
+                last_times[chat] = datetime.datetime(1, 1, 1)
                 last_sender[chat] = ''
                 last_msg[chat] = ''
+
+    chats = sorted(chats, key=lambda chat: last_times[chat])[::-1]
                 
-    return render_template('my_chats.html', is_mobile=is_mobile, chats=chats, others=others, last_sender=last_sender, last_msg=last_msg, last_files=last_files, unread_msgs=unread_msgs)
+    return render_template('my_chats.html', is_mobile=is_mobile, chats=chats, others=others, last_sender=last_sender, last_msg=last_msg, last_files=last_files, unread_msgs=unread_msgs, last_times=last_times)
 
 
 def main():
     port = int(os.environ.get('PORT', 8080))
     
     db_session.global_init('db/users.db')
+    
+    db_sess = db_session.create_session()
+    if db_sess.query(User).filter(User.id == 1).first() is None:
+        user = User(
+            username='Telegraf',
+            is_verified=True,
+            bdate=datetime.datetime.now(),
+            descript='Добро пожаловать в Telegraf!',
+            city='Международный',
+            last_online=datetime.datetime.now(),
+            email='telegraf@telegraf.telegraf',
+            free_chat=True
+        )
+        user.set_password('JH&#j3hGrtd@^&62gfhj#')
+        db_sess.add(user)
+        db_sess.commit()
+
     app.register_blueprint(user_api.blueprint)
     app.run(host='0.0.0.0', port=port)
 

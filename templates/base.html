@@ -37,7 +37,7 @@
             background-color: #5353d7;
         }
         .chat-input {
-            width: 90vw;
+            width: 80vw;
             font-size: 14px;
         }
 
@@ -97,8 +97,10 @@
         }
 
         .my-container {
-            margin-left: 0px;
-            margin-right: 0px;
+            padding-left: 10vw;
+            padding-right: 10vw;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .chat-content {
@@ -173,7 +175,6 @@
 </head>
 <body>
     <nav>
-        {% if is_mobile %}
         {% if current_user.is_authenticated %}
         <a class="navbar-brand" href="/logout">Exit from: {{ current_user.username }}</a>
         {% else %}
@@ -181,7 +182,6 @@
             <a class="btn btn-primary " href="/register">Зарегистрироваться</a>
             <a class="btn btn-success" href="/login">Войти</a>
         </p>
-        {% endif %}
         {% endif %}
     </nav>
     <header>
