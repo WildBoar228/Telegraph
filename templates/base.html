@@ -10,13 +10,170 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
     <title>{{title}}</title>
     <style>
+        {% if is_mobile %}
+        .mainbar {
+            background-color: #5353d7;
+            height: 80px;
+        }
+
+        .my-container {
+            padding-left: 0px;
+            padding-right: 0px;
+            margin-left: 0px;
+            margin-right: 0px;
+        }
+
+        .chat-content {
+            background-color: #d5dcff;
+            width: 100vw;
+            height: 60vh;
+            overflow: auto;
+        }
+        .chat-bar {
+            text-align: center;
+            vertical-align: bottom;
+            width: 100vw;
+            height: 80px;
+            background-color: #5353d7;
+        }
+        .chat-input {
+            width: 90vw;
+            font-size: 14px;
+        }
+
+        .message-our {
+            background-color: #9f9f9f;
+            text-align: right;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            margin-left: 20vw;
+            margin-right: 5vw;
+        }
+        .message-other {
+            background-color: #9292d1;
+            text-align: left;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            margin-left: 5vw;
+            margin-right: 20vw;
+        }
+        .message-username {
+            color: #5353d7;
+            font-weight: bold;
+            font-size: 20px;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+        .message-text {
+            font-size: 18px;
+            text-align: left;
+            margin-left: 5px;
+            margin-right: 5px;
+            word-wrap: break-word;
+        }
+        .message-file-text {
+            color: #23235e;
+            font-size: 16px;
+            text-align: left;
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+        .message-time {
+            color: #5c5c5c;
+            font-size: 14px;
+            text-align: right;
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+        .message-is-read {
+            font-size: 16px;
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+
+        {% else %}
         .mainbar {
             background-color: #5353d7;
         }
+
+        .my-container {
+            margin-left: 0px;
+            margin-right: 0px;
+        }
+
+        .chat-content {
+            background-color: #d5dcff;
+            width: 60vw;
+            height: 60vh;
+            overflow: auto;
+        }
+        .chat-bar {
+            text-align: center;
+            vertical-align: bottom;
+            width: 60vw;
+            height: 80px;
+            background-color: #5353d7;
+        }
+        .chat-input {
+            width: 60vw;
+            font-size: 14px;
+        }
+
+        .message-our {
+            background-color: #9f9f9f;
+            text-align: right;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            margin-left: 120px;
+            margin-right: 30px;
+        }
+        .message-other {
+            background-color: #9292d1;
+            text-align: left;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            margin-left: 30px;
+            margin-right: 120px;
+        }
+        .message-username {
+            color: #5353d7;
+            font-weight: bold;
+            font-size: 20px;
+            margin-left: 30px;
+            margin-right: 30px;
+        }
+        .message-text {
+            font-size: 18px;
+            text-align: left;
+            margin-left: 30px;
+            margin-right: 30px;
+            word-wrap: break-word;
+        }
+        .message-file-text {
+            color: #23235e;
+            font-size: 16px;
+            text-align: left;
+            margin-left: 30px;
+            margin-right: 30px;
+        }
+        .message-time {
+            color: #5c5c5c;
+            font-size: 14px;
+            text-align: right;
+            margin-left: 30px;
+            margin-right: 30px;
+        }
+        .message-is-read {
+            font-size: 16px;
+            margin-left: 30px;
+            margin-right: 30px;
+        }
+        {% endif %}
     </style>
 </head>
 <body>
     <nav>
+        {% if is_mobile %}
         {% if current_user.is_authenticated %}
         <a class="navbar-brand" href="/logout">Exit from: {{ current_user.username }}</a>
         {% else %}
@@ -25,21 +182,22 @@
             <a class="btn btn-success" href="/login">Войти</a>
         </p>
         {% endif %}
+        {% endif %}
     </nav>
     <header>
         <nav class="navbar navbar-light mainbar">
-            {% if os_name == "Windows" %}
-            <a class="navbar-brand" style="font-size: 30px; color: #e4e4e4; font-weight: bold;" href="#"><img src="{{url_for('static', filename='images/t2.png')}}" height="64" width="64">  Telegraph</a>
+            {% if is_mobile %}
+            <a class="navbar-brand" style="font-size: 30px; color: #e4e4e4; font-weight: bold;" href="#"><img src="{{url_for('static', filename='images/t2.png')}}" height="64" width="64">  Telegraf</a>
+            <a style="font-size: 30px; color: #e4e4e4; font-weight: bold;" href="/"><i class="fa fa-home" aria-hidden="true"></i></a>
+            {% else %}
+            <a class="navbar-brand" style="font-size: 30px; color: #e4e4e4; font-weight: bold;" href="#"><img src="{{url_for('static', filename='images/t2.png')}}" height="64" width="64">  Telegraf</a>
             <a style="font-size: 30px; color: #e4e4e4; font-weight: bold;" href="/"><i class="fa fa-home" aria-hidden="true"> Home</i></a>
             <a class="navbar-brand" style="font-size: 18px; color: #e4e4e4; font-weight: bold;" href="#">Азбука Морзе эволюционировала</a>
-            {% else %}
-            <a class="navbar-brand" style="font-size: 30px; color: #e4e4e4; font-weight: bold;" href="#"><img src="{{url_for('static', filename='images/t2.png')}}" height="64" width="64"></a>
-            <a style="font-size: 30px; color: #e4e4e4; font-weight: bold;" href="/"><i class="fa fa-home" aria-hidden="true"></i></a>
             {% endif %}
         </nav>
     </header>
     <!-- Begin page content -->
-    <main role="main" class="container" style="margin-left: 0px; margin-right: 0px;">
+    <main role="main" class="my-container">
         {% block content %}{% endblock %}
     </main>
 </body>
