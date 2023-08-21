@@ -27,7 +27,7 @@ login_manager.init_app(app)
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/main', methods=['GET', 'POST'])
 def main_page():
-    if not current_user.is_authenticated:
+    if not current_user.is_authenticated or current_user.is_blocked:
         return redirect('/login')
 
     db_sess = db_session.create_session()
@@ -187,7 +187,7 @@ def profile(id):
 
 @app.route('/friendship_request/<int:id>', methods=['GET', 'POST'])
 def friendship(id):
-    if not current_user.is_authenticated:
+    if not current_user.is_authenticated or current_user.is_blocked:
         redirect('/login')
 
     try:
@@ -228,7 +228,7 @@ def friendship(id):
 
 @app.route('/my_requests', methods=['GET', 'POST'])
 def my_requests():
-    if not current_user.is_authenticated:
+    if not current_user.is_authenticated or current_user.is_blocked:
         redirect('/login')
     db_sess = db_session.create_session()
     current_user.last_online = datetime.datetime.now()
@@ -244,7 +244,7 @@ def my_requests():
 
 @app.route('/accept_request/<int:id>', methods=['GET', 'POST'])
 def accept_request(id):
-    if not current_user.is_authenticated:
+    if not current_user.is_authenticated or current_user.is_blocked:
         redirect('/login')
     db_sess = db_session.create_session()
     current_user.last_online = datetime.datetime.now()
@@ -272,7 +272,7 @@ def accept_request(id):
 
 @app.route('/reject_request/<int:id>', methods=['GET', 'POST'])
 def reject_request(id):
-    if not current_user.is_authenticated:
+    if not current_user.is_authenticated or current_user.is_blocked:
         redirect('/login')
     db_sess = db_session.create_session()
     current_user.last_online = datetime.datetime.now()
@@ -292,7 +292,7 @@ def reject_request(id):
 
 @app.route('/chat/<int:id>', methods=['GET', 'POST'])
 def chat(id):
-    if not current_user.is_authenticated:
+    if not current_user.is_authenticated or current_user.is_blocked:
         return redirect("/login")
     db_sess = db_session.create_session()
     current_user.last_online = datetime.datetime.now()
@@ -366,7 +366,7 @@ def chat(id):
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
 def edit_profile():
-    if not current_user.is_authenticated:
+    if not current_user.is_authenticated or current_user.is_blocked:
         redirect('/login')
 
     agent = request.headers.get('User-Agent')
@@ -410,7 +410,7 @@ def edit_profile():
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
-    if not current_user.is_authenticated:
+    if not current_user.is_authenticated or current_user.is_blocked:
         return redirect("/login")
     db_sess = db_session.create_session()
     current_user.last_online = datetime.datetime.now()
@@ -470,7 +470,7 @@ def load_file(file_id):
 
 @app.route('/my_chats', methods=['GET'])
 def my_chats():
-    if not current_user.is_authenticated:
+    if not current_user.is_authenticated or current_user.is_blocked:
         return redirect("/login")
     db_sess = db_session.create_session()
     current_user.last_online = datetime.datetime.now()
