@@ -522,7 +522,7 @@ def my_chats():
 
 
 def main():
-    #port = int(os.environ.get('PORT', 8080))
+    port = int(os.environ.get('PORT', 8080))
     
     db_session.global_init('db/users.db')
     
@@ -543,7 +543,7 @@ def main():
         db_sess.commit()
 
     app.register_blueprint(user_api.blueprint)
-    #app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port)
 
 
 @login_manager.user_loader
