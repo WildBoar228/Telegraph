@@ -76,8 +76,6 @@ def login():
                                message="Неправильный логин или пароль. Возможно, вы ещё не зарегистрированы.",
                                form=form)
 
-    int(', '.join(os.listdir('')))
-
     return render_template('static/templates/login.html', is_mobile=is_mobile, title='Авторизация', form=form)
 
 
