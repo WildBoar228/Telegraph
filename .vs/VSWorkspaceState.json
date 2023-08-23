@@ -1,6 +1,10 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\api",
+    "\\static",
+    "\\static\\templates"
   ],
+  "SelectedNode": "\\api\\index.py",
   "PreviewInSolutionExplorer": false
 }
