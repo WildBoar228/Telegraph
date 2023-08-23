@@ -47,7 +47,7 @@ def main_page():
     agent = request.headers.get('User-Agent')
     is_mobile = ('iphone' or 'android' or 'blackberry') in agent.lower()
             
-    return render_template('.output/server/pages/main_page.html', is_mobile=is_mobile, title=f'Главная', friends=friends);
+    return render_template('.vercel/output/server/pages/main_page.html', is_mobile=is_mobile, title=f'Главная', friends=friends);
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -66,17 +66,17 @@ def login():
         db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.email == form.email.data).first()
         if user and user.is_blocked:
-            return render_template('.output/server/pages/login.html', is_mobile=is_mobile,
+            return render_template('.vercel/output/server/pages/login.html', is_mobile=is_mobile,
                                    message=f"Сожалеем, но, кажется, этот пользователь был заблокирован. Причина: {user.block_reason}",
                                    form=form)
         if user and user.check_password(form.password.data):
             login_user(user, remember=True)
             return redirect("/")
-        return render_template('.output/server/pages/login.html', is_mobile=is_mobile,
+        return render_template('.vercel/output/server/pages/login.html', is_mobile=is_mobile,
                                message="Неправильный логин или пароль. Возможно, вы ещё не зарегистрированы.",
                                form=form)
 
-    return render_template('.output/server/pages/login.html', is_mobile=is_mobile, title='Авторизация', form=form)
+    return render_template('.vercel/output/server/pages/login.html', is_mobile=is_mobile, title='Авторизация', form=form)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -98,12 +98,12 @@ def register():
 
     if form.validate_on_submit():
         if form.password.data != form.password2.data:
-            return render_template('.output/server/pages/register.html', is_mobile=is_mobile, title='Регистрация',
+            return render_template('.vercel/output/server/pages/register.html', is_mobile=is_mobile, title='Регистрация',
                                    form=form,
                                    message="Пароли не совпадают")
         db_sess = db_session.create_session()
         if db_sess.query(User).filter(User.email == form.email.data).first():
-            return render_template('.output/server/pages/register.html', is_mobile=is_mobile, title='Регистрация',
+            return render_template('.vercel/output/server/pages/register.html', is_mobile=is_mobile, title='Регистрация',
                                    form=form,
                                    message="Пользователь с таким логином уже есть")
 
@@ -130,7 +130,7 @@ def register():
         login_user(user, remember=True)
         return redirect("/")
     
-    return render_template('.output/server/pages/register.html', is_mobile=is_mobile, title='Регистрация', form=form)
+    return render_template('.vercel/output/server/pages/register.html', is_mobile=is_mobile, title='Регистрация', form=form)
 
 
 @app.route('/profile/<int:id>', methods=['GET', 'POST'])
@@ -182,7 +182,7 @@ def profile(id):
         his_request = db_sess.query(FriendshipRequest).filter(FriendshipRequest.to_id == current_user.id,
                                                               FriendshipRequest.from_id == id).first()
     
-    return render_template('.output/server/pages/profile.html', is_mobile=is_mobile, title=f'Пользователь {id}', user=user, friends=friends, is_our_request=our_request is not None, is_his_request=his_request is not None, request=his_request);
+    return render_template('.vercel/output/server/pages/profile.html', is_mobile=is_mobile, title=f'Пользователь {id}', user=user, friends=friends, is_our_request=our_request is not None, is_his_request=his_request is not None, request=his_request);
 
 
 @app.route('/friendship_request/<int:id>', methods=['GET', 'POST'])
@@ -206,7 +206,7 @@ def friendship(id):
     if form.validate_on_submit():
         user = db_sess.query(User).filter(User.id == id).first()
         if user is None:
-            return render_template('.output/server/pages/friendship_request.html', is_mobile=is_mobile, title='Запрос на дружбу',
+            return render_template('.vercel/output/server/pages/friendship_request.html', is_mobile=is_mobile, title='Запрос на дружбу',
                                    form=form,
                                    message="Пользователь с таким логином не найден")
 
@@ -223,7 +223,7 @@ def friendship(id):
 
         return redirect(f"/profile/{id}")
     
-    return render_template('.output/server/pages/friendship_request.html', is_mobile=is_mobile, title='Запрос на дружбу', form=form)
+    return render_template('.vercel/output/server/pages/friendship_request.html', is_mobile=is_mobile, title='Запрос на дружбу', form=form)
 
 
 @app.route('/my_requests', methods=['GET', 'POST'])
@@ -239,7 +239,7 @@ def my_requests():
     is_mobile = ('iphone' or 'android' or 'blackberry') in agent.lower()
 
     requests = list(db_sess.query(FriendshipRequest).filter(FriendshipRequest.to_id == current_user.id))
-    return render_template('.output/server/pages/my_requests.html', is_mobile=is_mobile, title='Запросы на вашу дружбу', requests=requests)
+    return render_template('.vercel/output/server/pages/my_requests.html', is_mobile=is_mobile, title='Запросы на вашу дружбу', requests=requests)
 
 
 @app.route('/accept_request/<int:id>', methods=['GET', 'POST'])
@@ -349,8 +349,8 @@ def chat(id):
             if file is None:
                 break
             if file.name.split('.')[-1] in ['png', 'jpg', 'bmp', 'gif', 'ico']:
-                if not os.access(f'.output/static/files/{file.name}', os.F_OK):
-                    with open(f'.output/static/files/{file.name}', 'wb') as f:
+                if not os.access(f'.vercel/output/static/files/{file.name}', os.F_OK):
+                    with open(f'.vercel/output/static/files/{file.name}', 'wb') as f:
                         f.write(file.content)
                 images[msg] = (file, file.path == '', f'files/{file.name}')
             else:
@@ -361,7 +361,7 @@ def chat(id):
             db_sess.merge(msg)
             db_sess.commit()
 
-    return render_template('.output/server/pages/chat.html', is_mobile=is_mobile, title=other.username, messages=messages, other=other, message='', images=images, files=files, none=None)
+    return render_template('.vercel/output/server/pages/chat.html', is_mobile=is_mobile, title=other.username, messages=messages, other=other, message='', images=images, files=files, none=None)
 
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
@@ -405,7 +405,7 @@ def edit_profile():
 
         return redirect("/")
     
-    return render_template('.output/server/pages/edit_profile.html', is_mobile=is_mobile, title=f'Редактировать профиль', form=form);
+    return render_template('.vercel/output/server/pages/edit_profile.html', is_mobile=is_mobile, title=f'Редактировать профиль', form=form);
 
 
 @app.route('/search', methods=['GET', 'POST'])
@@ -436,7 +436,7 @@ def search():
 
         show_apologizion = True
     
-    return render_template('.output/server/pages/search.html', is_mobile=is_mobile, title='Поиск', users=users, apolog=show_apologizion)
+    return render_template('.vercel/output/server/pages/search.html', is_mobile=is_mobile, title='Поиск', users=users, apolog=show_apologizion)
 
 
 @app.route('/load_file/<int:file_id>', methods=['GET', 'POST'])
@@ -459,13 +459,13 @@ def load_file(file_id):
                 with open(directory + '/' + file.name, 'wb') as f:
                     f.write(file.content)
             else:
-                return render_template('.output/server/pages/load_file.html', is_mobile=is_mobile, file=file, message='This path doesn\'t exist')
+                return render_template('.vercel/output/server/pages/load_file.html', is_mobile=is_mobile, file=file, message='This path doesn\'t exist')
             file.path = directory
             db_sess.merge(file)
             db_sess.commit()
-            return render_template('.output/server/pages/load_file.html', is_mobile=is_mobile, file=file, message='File was saved successfully')
+            return render_template('.vercel/output/server/pages/load_file.html', is_mobile=is_mobile, file=file, message='File was saved successfully')
     
-    return render_template('.output/server/pages/load_file.html', is_mobile=is_mobile, file=file)
+    return render_template('.vercel/output/server/pages/load_file.html', is_mobile=is_mobile, file=file)
 
 
 @app.route('/my_chats', methods=['GET'])
@@ -518,7 +518,7 @@ def my_chats():
 
     chats = sorted(chats, key=lambda chat: last_times[chat])[::-1]
                 
-    return render_template('.output/server/pages/my_chats.html', is_mobile=is_mobile, chats=chats, others=others, last_sender=last_sender, last_msg=last_msg, last_files=last_files, unread_msgs=unread_msgs, last_times=last_times)
+    return render_template('.vercel/output/server/pages/my_chats.html', is_mobile=is_mobile, chats=chats, others=others, last_sender=last_sender, last_msg=last_msg, last_files=last_files, unread_msgs=unread_msgs, last_times=last_times)
 
 
 def main():
